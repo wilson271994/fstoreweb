@@ -1,0 +1,903 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static thumbnail i18n widget_tweaks countries currency_converter_tags %}
+{% block content  %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row g-4 mb-4">
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Toutes les Publications</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">{{products}}</h4>
+                </div>
+                <small>Total</small>
+                </div>
+                <span class="badge bg-label-primary rounded p-2">
+                <i class="bx bx-flag bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Publications Inactives</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">{{productinactive}}</h4>
+                </div>
+                <small>Total </small>
+                </div>
+                <span class="badge bg-label-danger rounded p-2">
+                <i class="bx bx-flag bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Publications Actives</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">{{productactive}}</h4>
+                </div>
+                <small>Total</small>
+                </div>
+                <span class="badge bg-label-success rounded p-2">
+                <i class="bx bx-flag bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Publications Favorites</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">0</h4>
+                </div>
+                <small>Total</small>
+                </div>
+                <span class="badge bg-label-warning rounded p-2">
+                <i class="bx bx-flag bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- products List Table -->
+    <div class="card">
+        <div class="card-header border-bottom row">
+            <h5 class="card-title col-lg-7">Liste des Publications</h5>
+            <div class="col-lg-3 searchpage">
+                <input class="form-control" id="searchuser" type="text" placeholder="Recherche..">
+            </div>
+            <div class="plusbtn col-lg-2" id="addproduct"><i class="fa fa-plus-circle"></i></div>
+        </div> 
+        
+        <!-- Main content -->
+        <div class="card-body">
+        <table id="filterproduct" class="table shadow-card">
+            <thead>
+                <tr>
+                    <th>Images</th>
+                    <th>Noms</th>
+                    <th>Descriptions</th>
+                    <th>Catégories</th>
+                    <th>Marques</th>
+                    <th>Prix</th>
+                    <th>Réduction</th>
+                    <th>Quantités</th>
+                    <th>Validations</th>
+                    <th>Status</th>
+                    <th>Plus ></th>
+                </tr>
+            </thead>    
+            <tbody>
+                {% if allproduct %}
+                    {% for product in allproduct %}
+                        <tr>
+                            <td>
+                                {% if product.cover.image %}
+                                    <img src="{{ product.cover.image.url }}" class='img-circle elevation-2 pp_user'/>
+                                {% else %}
+                                    <img src="{% static 'backend/img/avatars/shopping.png' %}" class='img-circle elevation-2 pp_user'/>
+                                {% endif %}
+                            </td>
+                            <td>{{product.name|striptags|truncatechars:50}}</td>
+                            <td>{{product.description|striptags|truncatechars:50}}</td>
+                            <td>{{product.category}}</td>
+                            <td>{{product.brand}}</td>
+                            <td>
+                                <div class="activelistitem">{{ product.price }} FCFA</div>
+                            </td>
+                            <td>
+                                <div class="activelistitem">{{ product.discount }} FCFA</div>
+                            </td>
+                            <td>
+                                <div class="activelistitem">{{product.quantity}} Pièce(s) disponible</div>
+                            </td>
+                            <td>
+                                {% if product.is_approved == True %}
+                                    <div class="activelistitem">Approuver</div>
+                                {% else %}
+                                    <div class="activelistitem">Non Approuver</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if product.is_active == True %}
+                                    <div class="activelistitem">Actif</div>
+                                {% else %}
+                                    <div class="activelistitem">Inactif</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="dropdown optionblock">
+                                    <button class="btn dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"><p>Options</p></button>
+                                    <div class="dropdown-menu"> 
+                                        <a class="dropdown-item dropitem validationForm" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:validate-product'%}" 
+                                            data-id="{{product.id}}"
+                                            data-token="{{csrf_token}}"
+                                            data-message="{% if product.is_approved %}Cet Article ne sera plus visible par les achéteurs!{% else %}Cet Article sera desormais visible par les achéteurs!{% endif %}"
+                                            data-type="warning">
+                                            <i class="fas fa-shield"></i> 
+                                            {% if product.is_approved %}Deapprouver cet Article{% else %}Approuver cet Article{% endif %}
+                                        </a> 
+
+                                        <a class="dropdown-item dropitem statusForm" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:status-product'%}" 
+                                            data-id="{{product.id}}"
+                                            data-token="{{csrf_token}}" 
+                                            data-message="{% if product.is_active %}Cet Article sera desormais Inactif!{% else %}Cet Article sera desormais Actif!{% endif %}"
+                                            data-type="warning"
+                                            >
+                                        <i class="fas fa-ban"></i> 
+                                            {% if product.is_active %}Bloquer cet article{% else %}Activer cet article{% endif %}
+                                        </a> 
+
+                                        {% if product.presentation %}
+                                            <a class="dropdown-item dropitem" id="updatepresentation" href="JavaScript:void()" 
+                                                data-productid="{{product.id}}"
+                                                data-presentation="{{product.presentation}}">
+                                            <i class="fas fa-edit"></i> Modifier la Présentation</a> 
+                                        {% else %}
+                                            <a class="dropdown-item dropitem addpresentation" href="JavaScript:void()" 
+                                                data-id="{{product.id}}">
+                                            <i class="fas fa-plus-circle"></i> Créer la Présentation</a> 
+                                        {% endif %}
+
+                                        {% if product.is_attribut %}
+                                            <a class="dropdown-item dropitem updateattribut" href="JavaScript:void()" 
+                                                data-attribut           = "{{product.attribut.id}}"
+                                                data-sizeselect         = "{{product.sizes}}"
+                                                data-materialselect     = "{{product.materials}}" 
+                                                data-colorselect        = "{{product.colors}}"
+                                                data-allsize            = "{{all_size}}"
+                                                data-allmaterial        = "{{all_material}}"
+                                                data-allcolor           = "{{all_color}}"
+                                            >
+                                            <i class="fas fa-edit"></i> Modifier les Attributs</a> 
+                                        {% else %}
+                                            <a class="dropdown-item dropitem addattribut" href="JavaScript:void()" 
+                                                data-id="{{product.id}}">
+                                            <i class="fas fa-plus-circle"></i> Créer Les Attributs</a> 
+                                        {% endif %}
+
+                                        {% if product.is_flash_sell %}
+                                            <a class="dropdown-item dropitem deleteflash" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:delete-product-flash'%}" 
+                                            data-id="{{product.id}}"
+                                            data-token="{{csrf_token}}">
+                                            <i class="fas fa-trash"></i> Supprimer en Vente Flash</a> 
+                                        {% else %}
+                                            <a class="dropdown-item dropitem addflash" href="JavaScript:void()" 
+                                                data-id="{{product.id}}">
+                                            <i class="fas fa-plus-circle"></i> Ajouter en Vente Flash</a> 
+                                        {% endif %}
+
+                                        <a class="dropdown-item dropitem updateproductmodal" 
+                                            href="Javascript:void()"
+                                            data-id             = "{{product.id}}"
+                                            data-name           = "{{product.name}}" 
+                                            data-description    = "{{product.description}}" 
+                                            data-price          = "{{product.price}}" 
+                                            data-discount       = "{{product.discount}}" 
+                                            data-quantity       = "{{product.quantity}}" 
+                                            data-weigth         = "{{product.weigth}}" 
+                                            data-height         = "{{product.height}}" 
+                                            data-width          = "{{product.width}}" 
+                                            data-depth          = "{{product.depth}}" 
+                                            data-provider       = "{{product.provider}}"
+                                            data-providerd      = "{{product.providerid}}" 
+                                            data-marque         = "{{product.brand}}"
+                                            data-marqueid       = "{{product.brand.id}}"
+                                            data-companycom     = "{{product.commission_company}}"
+                                        >
+                                        <i class="fas fa-edit"></i> Modifier Cet article</a>
+
+                                        <a class="dropdown-item dropitem deleteSubmit" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:delete-product'%}" 
+                                            data-id="{{product.id}}"
+                                            data-type="warning"
+                                            data-message="Attention cette opération est ireversible, cliquez sur oui pour continuer."
+                                            data-token="{{csrf_token}}">
+                                            <i class="fas fa-trash"></i> Supprimer Cet article</a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr >
+                        <td colspan="12" class="text-primary text-center" >
+                            <p class="emptylist">Aucune publication n'a été enregistrée!</p>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        </div>
+        <!-- /.content --> 
+
+    </div>
+
+    <!--Modal de creation des products -->
+    <div class="modal fade"  id="productCreation" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Nouvelle Article</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="createSubmit" method="post" enctype="multipart/form-data" onsubmit="postSubmission(this)"  action="{% url 'dashboard:create-product' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='creator' value="{{request.user.id}}" />
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12" >
+                                <div class="form-group label-floating">
+                                    <p class="titleform">Nom de l'article<span style="color:#F07000">*</span></p>
+                                    <textarea name="name" required placeholder="Nom du produit" class="form-control" style="width: 100%; border-radius: 5px;"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <div class="form-group label-floating">
+                                    <p  class="titleform">Pourcentage de commission de l'entreprise (Exemple : 0.3)</p>
+                                    <input type="text" name="company_commission" class="form-control" placeholder="Insérer la valeur">
+                                    <span class="material-input"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row" >
+                            <div class="col-lg-12 col-md-12 col-xs-12" >
+                                <p  class="titleform">Description<span style="color:#F07000">*</span></p>
+                                <div class="form-group label-floating">
+                                    <div class="editor" style="height:20vh">
+                                    </div>
+                                    <input class="form-control post-content" name="description" type="hidden"/>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row" >
+                            <div class="col-lg-4 col-md-12 col-xs-12" >
+                                <p  class="titleform">Choisir une catégorie<span style="color:#F07000">*</span></p>
+                                <div class="form-group label-floating">
+                                    <select 
+                                        name="parent_cat" 
+                                        id="id_parent" 
+                                        required 
+                                        class="form-control" 
+                                        data-url="{% url 'dashboard:get-child-category'%}"
+                                        data-token="{{ csrf_token }}"
+                                        >
+                                        <option selected>{% trans 'Choisir la Catégorie'%}</option>
+                                        {% for parent  in all_parent_cat %}
+                                            <option value="{{parent.id}}">{{parent.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <p  class="titleform">Choisir une sous-catégorie<span style="color:#F07000">*</span></p>
+                                <div class="form-group label-floating">
+                                    <select 
+                                        name="child_cat" 
+                                        id="id_child" 
+                                        required 
+                                        class="form-control" 
+                                        data-url="{% url 'dashboard:get-grant-category'%}"
+                                        data-token="{{ csrf_token }}"
+                                        >
+                                        <option value="" selected>{% trans "Choisir la sous catégorie" %}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-xs-12 ">
+                                <div class="form-group label-floating"> 
+                                    <p  class="titleform">La sous sous-catégorie<span style="color:#F07000">*</span></p>
+                                    <select name="category" id="id_grant_child" required class="form-control">
+                                        <option value="" selected>{% trans "Choisir la sous sous-catégorie" %}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row" >
+                            <div class="col-lg-4 col-md-12 col-xs-12" >
+                                <p  class="titleform">Choisir le Fournisseur<span style="color:#F07000">*</span></p>
+                                <div class="form-group label-floating">
+                                    <select name="provider" required class="form-control">
+                                        <option selected>Choisir le Fournisseur</option>
+                                        {% for item in all_provider %}
+                                            <option value="{{item.id}}">{{item.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-xs-12" >
+                                <p  class="titleform">Choisir une marque<span style="color:#F07000">*</span></p>
+                                <div class="form-group label-floating">
+                                    <select name="brand" required class="form-control">
+                                        <option selected>Choisir une marque</option>
+                                        {% for brand in all_brand %}
+                                            <option value="{{brand.id}}">{{brand.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <div class="form-group label-floating">
+                                    <p  class="titleform">Prix d'article<span style="color:#F07000">*</span></p>
+                                    {% render_field product_form.price required="required" class="form-control" placeholder="Prix..." %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <div class="form-group label-floating"> 
+                                    <p  class="titleform">Prix de réduction</p>
+                                    {% render_field product_form.discount required="required" class="form-control" value="0" %}
+                                    <span class="material-input"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <div class="form-group label-floating">
+                                    <p  class="titleform">Poid du produit (en g)</p>
+                                    <input type="number" name="weigth" class="form-control" placeholder="Poid...">
+                                    <span class="material-input"></span>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <div class="form-group label-floating">
+                                    <p  class="titleform">Quantité en stock<span style="color:#F07000">*</span></p>
+                                    <input type="number" name="quantity" class="form-control" placeholder="Quantité..."  required >
+                                    <span class="material-input"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <div class="form-group label-floating">
+                                    <p  class="titleform">Hauteur (en Cm)</p>
+                                    <input type="number" name="height" class="form-control" placeholder="Hauteur...">
+                                    <span class="material-input"></span>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <div class="form-group label-floating">
+                                    <p  class="titleform">Largeur (en Cm)</p>
+                                    <input type="number" name="width" class="form-control" placeholder="Largeur...">
+                                    <span class="material-input"></span>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <div class="form-group label-floating">
+                                    <p  class="titleform">Profondeur (en Cm)</p>
+                                        <input type="number" name="depth" class="form-control" placeholder="Profondeur...">
+                                    <span class="material-input"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <div class="form-group label-floating">
+                                    <p  class="titleform">Images de l'articles<span style="color:#F07000">*</span></p>
+                                    <input type="file" name="images" class="form-control" required multiple />
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeaddproduct">{% trans 'Annuler' %}</button>
+                        <button type="submit" id="createbtn" class="btn newBtn createbtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal de mise à jour des produits -->
+    <div class="modal fade"  id="productUpdate" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Mise à jour d'une publication</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="updateSubmit" method="post" enctype="multipart/form-data" onsubmit="postSubmissionUpdate(this)"  action="{% url 'dashboard:update-product' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='product' id="productid"/>
+                    <div class="modal-body">
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12" >
+                                <div class="form-group label-floating">
+                                    <p class="titleform">Nom de l'article</p>
+                                    <textarea name="name" id="productname" placeholder="Nom du produit" class="form-control" style="width: 100%; border-radius: 5px;"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <div class="form-group label-floating">
+                                    <p  class="titleform">Pourcentage de commission de l'entreprise (Exemple : 0.3)</p>
+                                    <input type="text" name="company_commission" id="productcompcom" class="form-control" placeholder="Insérer la valeur">
+                                    <span class="material-input"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row" >
+                            <div class="col-lg-12 col-md-12 col-xs-12" >
+                                <p  class="titleform">Description</p>
+                                <div class="form-group label-floating">
+                                    <div class="editorupdate" style="height:20vh">
+                                    </div>
+                                    <input class="form-control post-content-update" name="description" type="hidden"/>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row" >
+                            <div class="col-lg-4 col-md-12 col-xs-12" >
+                                <p  class="titleform">Choisir une catégorie</p>
+                                <div class="form-group label-floating">
+                                    <select name="parent_cat" id="id_parent_update" class="form-control" data-url="{% url 'dashboard:get-child-category'%}">
+                                        <option selected>{% trans 'Choisir la Catégorie'%}</option>
+                                        {% for parent  in all_parent_cat %}
+                                            <option value="{{parent.id}}">{{parent.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <p  class="titleform">Choisir une sous-catégorie</p>
+                                <div class="form-group label-floating">
+                                    <select name="child_cat" id="id_child_update" class="form-control" data-url="{% url 'dashboard:get-grant-category'%}">
+                                        <option value="" selected>{% trans "Choisir la sous catégorie" %}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-xs-12 ">
+                                <div class="form-group label-floating">
+                                    <p  class="titleform">La sous sous-catégorie</p>
+                                    <select name="category" id="id_grant_child_update" class="form-control">
+                                        <option value="" selected>{% trans "Choisir la sous sous-catégorie" %}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row" >
+                            <div class="col-lg-4 col-md-12 col-xs-12" >
+                                <p  class="titleform">Choisir le Fournisseur</p>
+                                <div class="form-group label-floating">
+                                    <select name="provider" id="productprovider" class="form-control">
+                                        <option selected>Choisir le Fournisseur</option>
+                                        {% for item in all_provider %}
+                                            <option value="{{item.id}}">{{item.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-xs-12" >
+                                <p  class="titleform">Choisir une marque</p>
+                                <div class="form-group label-floating">
+                                    <select name="marque" id="productmarque" class="form-control">
+                                        <option selected>Choisir une marque</option>
+                                        {% for marque in all_marque %}
+                                            <option value="{{marque.id}}">{{marque.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <div class="form-group label-floating">
+                                    <p  class="titleform">Prix du produit</p>
+                                    <input name="price" id="productprice" class="form-control" placeholder="Prix..."/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <div class="form-group label-floating">
+                                    <p  class="titleform">Prix de réduction</p>
+                                    <input name="discount" id="productdiscount" class="form-control" value="0"/>
+                                    <span class="material-input"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <div class="form-group label-floating">
+                                    <p  class="titleform">Poid du produit (en g)</p>
+                                    <input type="number" name="weigth" id="productweigth" class="form-control" placeholder="Poid..." >
+                                    <span class="material-input"></span>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <div class="form-group label-floating">
+                                    <p  class="titleform">Quantité en stock</p>
+                                    <input type="number" name="quantity" id="productquantity" class="form-control" placeholder="Quantité..." >
+                                    <span class="material-input"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <div class="form-group label-floating">
+                                    <p  class="titleform">Hauteur (en Cm)</p>
+                                    <input type="number" name="height" id="productheight" class="form-control" placeholder="Hauteur...">
+                                    <span class="material-input"></span>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <div class="form-group label-floating">
+                                    <p  class="titleform">Largeur (en Cm)</p>
+                                    <input type="number" name="width" id="productwidth" class="form-control" placeholder="Largeur...">
+                                    <span class="material-input"></span>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <div class="form-group label-floating">
+                                    <p  class="titleform">Profondeur (en Cm)</p>
+                                        <input type="number" name="depth" id="productdepth" class="form-control" placeholder="Profondeur...">
+                                    <span class="material-input"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <div class="form-group label-floating">
+                                    <p  class="titleform">Images de l'articles<span style="color:#F07000">*</span></p>
+                                    <input type="file" name="images" class="form-control" multiple />
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset" data-bs-dismiss="modal" aria-label="Close"  class="btn btn-bg-secondary">{% trans 'Annuler' %}</button>
+                        <button type="submit" class="btn newBtn updatebtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal de creation des présentations -->
+    <div class="modal fade"  id="presentationCreation" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Ajouter la présentation</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form id="createSubmitPresentation" method="post" enctype="multipart/form-data"  
+                onsubmit="postSubmissionPresentation(this)"
+                action="{% url 'dashboard:create-presentation' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='creator' value="{{request.user.id}}" />
+                    <input type='hidden'  name='id' id="productpresentationid" />
+                    <div class="modal-body">
+                        <div class="row" >
+                            <div class="col-lg-12 col-md-12 col-xs-12" >
+                                <p  class="titleform">Présentation du produit<span style="color:#F07000">*</span></p>
+                                <div class="editorpresentation" style="height:40vh">
+                                </div>
+                                <input type="hidden" type="text" name="presentation" class="post-content-presentation" />
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeaddpresentation">{% trans 'Annuler' %}</button>
+                        <button type="submit" class="btn newBtn createbtn createbtnpresentation">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Presentation -->
+    <div class="modal fade"  id="presentationUpdate" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Mettre à jour la présentation</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form id="updateSubmitPresentation" method="post" enctype="multipart/form-data"  
+                onsubmit="postSubmissionPresentationUpdate(this)"
+                action="{% url 'dashboard:update-presentation' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='id' id="presentationproductid" />
+                    <div class="modal-body">
+                        <div class="row" >
+                            <div class="col-lg-12 col-md-12 col-xs-12" >
+                                <p  class="titleform">Présentation du produit<span style="color:#F07000">*</span></p>
+                                <div class="editorpresentationupdate" style="height:40vh">
+                                </div>
+                                <input type="hidden" type="text" name="presentation" class="post-content-presentation-update" />
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeupdatepresentation">{% trans 'Annuler' %}</button>
+                        <button type="submit" class="btn newBtn createbtn updatebtnpresentation">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal de creation des attributs -->
+    <div class="modal fade"  id="attributCreation" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Ajouter des attributs</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form id="createSubmitAttribute" method="post" enctype="multipart/form-data" action="{% url 'dashboard:create-attribut' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='creator' value="{{request.user.id}}" />
+                    <input type='hidden'  name='product' id="productattributid" />
+                    <div class="modal-body">
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <div class="form-group label-floating">
+                                    <p  class="titleform">Choisir les tailles disponibles en stock<span style="color:#F07000">*</span></p>
+                                    <select name="size" multiple class="form-control selectpicker" 
+                                        data-selected-text-format="count > 3"
+                                        data-live-search="true"
+                                        required>
+                                        {% for size  in all_size %}
+                                            <option value="{{size.id}}">{{size.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <div class="form-group label-floating">
+                                    <p  class="titleform">Choisir les matières disponibles en stock<span style="color:#F07000">*</span></p>
+                                    <select name="material" class="form-control selectpicker" 
+                                        multiple data-selected-text-format="count > 3"
+                                        data-live-search="true"
+                                        required>
+                                        {% for material  in all_material %}
+                                            <option value="{{material.id}}">{{material.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12" id="default_color">
+                                <input type="hidden" value="False" name="is_order_color"/>
+                                <div class="form-group label-floating">
+                                    <p class="titleform">Choisir les couleurs disponible en stock<span style="color:#F07000">*</span></p>
+                                    <select name="color" class="form-control selectpicker" 
+                                        multiple data-selected-text-format="count > 3"
+                                        data-live-search="true"
+                                        required>
+                                        {% for color  in all_color %}
+                                            <option value="{{color.id}}">{{color.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeaddattribut">{% trans 'Annuler' %}</button>
+                        <button type="submit" class="btn newBtn createbtn createbtnattribute">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal de mise à jour des attributs -->
+    <div class="modal fade"  id="attributUpdate" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Modifier les attributs</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form id="updateSubmitAttribute" method="post" enctype="multipart/form-data" action="{% url 'dashboard:update-attribut' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='attribut' id="attributid" />
+                    <div class="modal-body">
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <div class="form-group label-floating">
+                                    <p  class="titleform">Choisir les tailles disponibles en stock<span style="color:#F07000">*</span></p>
+                                    <select name="size" multiple class="form-control selectpicker" id="selectsize"
+                                        data-selected-text-format="count > 3"
+                                        data-live-search="true">
+                                        {% for size  in all_size %}
+                                            <option value="{{size.id}}">{{size.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <div class="form-group label-floating">
+                                    <p  class="titleform">Choisir les matières disponibles en stock<span style="color:#F07000">*</span></p>
+                                    <select name="material" class="form-control selectpicker" id="selectmaterial"
+                                        multiple data-selected-text-format="count > 3"
+                                        data-live-search="true">
+                                        {% for material  in all_material %}
+                                            <option value="{{material.id}}">{{material.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12" id="default_color">
+                                <input type="hidden" value="False" name="is_order_color"/>
+                                <div class="form-group label-floating">
+                                    <p class="titleform">Choisir les couleurs disponible en stock<span style="color:#F07000">*</span></p>
+                                    <select name="color" class="form-control selectpicker" id="selectcolor" 
+                                        multiple data-selected-text-format="count > 3"
+                                        data-live-search="true">
+                                        {% for color  in all_color %}
+                                            <option value="{{color.id}}">{{color.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeupdateattribut">{% trans 'Annuler' %}</button>
+                        <button type="submit" class="btn newBtn createbtn updatebtnattribute">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal de ajouter en vente flash -->
+    <div class="modal fade"  id="addFlashProduct" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Ajouter en vente flash</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form id="createSubmitFlash" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:add-flash-product' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='creator' value="{{request.user.id}}" />
+                    <input type='hidden'  name='product' id="productflashid" />
+                    <div class="modal-body">
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Date de début' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type='date'  name="date_start" required placeholder="Date de debut... " />
+                                    <hr>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Date de Fin' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type='date'  name="date_end" required placeholder="Date de fin... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Prix promotionel' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="promo_price" placeholder="prix... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeaddflash">{% trans 'Annuler' %}</button>
+                        <button type="submit" class="btn newBtn createbtn createbtnflash">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock content  %}

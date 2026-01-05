@@ -1,0 +1,207 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static thumbnail i18n widget_tweaks countries %}
+{% block content  %}
+<div class="container-xxl flex-grow-1 container-p-y">
+
+    <!-- devises List Table -->
+    <div class="card">
+        <div class="card-header border-bottom row">
+            <h5 class="card-title col-lg-7">Listes des Menus</h5>
+            <div class="col-lg-4 searchpage">
+                <input class="form-control" id="searchbank" type="text" placeholder="Recherche..">
+            </div>
+            <button class="col-lg-1 btnnew" data-bs-toggle="modal" data-bs-target="#createMenuModal">
+                <i class="fa fa-plus-circle"></i> 
+            </button>
+        </div> 
+        
+        <!-- Main content -->
+        <div class="card-body">
+        <table id="filtermenu" class="table shadow-card">
+            <thead>
+                <tr>
+                    <th>Titre</th>
+                    <th>Code</th>
+                    <th>Lien (URL)</th>
+                    <th>Status</th>
+                    <th>Plus ></th>
+                </tr>
+            </thead>    
+            <tbody>
+                {% if allmenu %}
+                    {% for item in allmenu %}
+                        <tr>
+                            <td>{{item.title}}</td>
+                            <td>{{item.code}}</td>
+                            <td>{{item.link}}</td>
+                            <td>
+                                {% if item.is_active == True %}
+                                    <div class="activelistitem">Actif</div>
+                                {% else %}
+                                    <div class="activelistitem">Inactif</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="dropdown optionblock">
+                                    <button class="btn dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"><p>Options</p></button>
+                                    <div class="dropdown-menu"> 
+                                        <a class="dropdown-item dropitem statusForm" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:status-menu'%}" 
+                                            data-id="{{item.id}}"
+                                            data-token="{{csrf_token}}" 
+                                            data-message="{% if item.is_active %}Ce Menu sera desormais Inactive!{% else %}Ce Menu sera desormais Active!{% endif %}"
+                                            data-type="warning"
+                                            >
+                                            <i class="fas fa-ban"></i> 
+                                            {% if item.is_active %}Bloquer ce Menu{% else %}Activer ce Menu{% endif %}
+                                        </a> 
+
+                                        <a class="dropdown-item dropitem updatemenu" href="Javascript:void()"
+                                            data-id="{{item.id}}"
+                                            data-title="{{item.title}}" 
+                                            data-code="{{item.code}}" 
+                                            data-link="{{item.link}}" 
+                                            data-bs-toggle="modal" data-bs-target="#updateMenuModal"
+                                        >
+                                        <i class="fas fa-edit"></i> Modifier</a>
+
+                                        <a class="dropdown-item dropitem deleteSubmit" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:delete-menu'%}" 
+                                            data-id="{{item.id}}"
+                                            data-type="warning"
+                                            data-message="Attention cette opération est irréversible, cliquez sur oui pour continuer."
+                                            data-token="{{csrf_token}}">
+                                            <i class="fas fa-trash"></i> Supprimer</a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr >
+                        <td colspan="7" class="text-primary text-center" >
+                            <p class="emptylist">Aucun menu n'a été enregistré!</p>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        </div>
+        <!-- /.content --> 
+
+    </div>
+
+    <!--Modal de creation -->
+    <div class="modal fade"  id="createMenuModal" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logo.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Nouveau Menu</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="createSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:create-menu' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='create_by' value="{{request.user.id}}" />
+                    <div class="modal-body">
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Titre' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" name="title" placeholder="Titre..."  required/>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Code' %}</p>
+                                <div class="form-group label-floating">
+                                    <input type="number" class="form-control" name="code" placeholder="Sasisir ici..." required />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Lien (URL)' %}</p>
+                                <div class="form-group label-floating">
+                                    <input type="text" class="form-control" name="link" placeholder="Sasisir ici..." required />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary" data-bs-dismiss="modal" aria-label="Close">{% trans 'Annuler' %}</button>
+                        <button type="submit" id="buttomcreate" class="btn newBtn createbtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal de mise à jour des banques -->
+    <div class="modal fade"  id="updateMenuModal" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logo.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Mise à jour des informations</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="updateSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:update-menu' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='id' id="menuid" />
+                    <div class="modal-body">
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Titre' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" name="title" placeholder="Titre..." id="menutitle"/>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Code' %}</p>
+                                <div class="form-group label-floating">
+                                    <input type="number" class="form-control" name="code" placeholder="Sasisir ici..." id="menucode" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Lien (URL)' %}</p>
+                                <div class="form-group label-floating">
+                                    <input type="text" class="form-control" name="link" placeholder="Sasisir ici..." id="menulink" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary" data-bs-dismiss="modal" aria-label="Close">{% trans 'Annuler' %}</button>
+                        <button type="submit" class="btn newBtn updatebtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock content  %}

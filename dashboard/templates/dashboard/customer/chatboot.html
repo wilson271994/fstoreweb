@@ -1,0 +1,116 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static %}
+{%  block content %}
+<!-- ====================================
+——— CONTENT WRAPPER
+===================================== -->
+<div class="content-wrapper">
+  <div class="content card card-default containerchatboot">
+    <div class="row no-gutters">
+    <div class="col-lg-4 col-xxl-4 discussionblock">
+      <div class="chat-left-sidebar">
+        <form class="card-header px-0">
+          <div class="input-group px-5">
+            <input type="text" class="form-control" id="searchdialogue" aria-label="Text input with dropdown button" placeholder="Search...">
+          </div>
+        </form>
+        <ul class="px-0" data-simplebar style="height: 630px;" id="filterdialog">
+          {% for dialog in dialogs %}
+          <li class="mb-4 px-5 py-2">
+            <a href="javascript:void(0)" class="media media-message chatdialog" 
+              owner_email="{{request.user.email}}" 
+              owner_name="{{request.user.last_name}}" 
+              owner_id="{{request.user.id}}" 
+              iddialog="{{dialog.id}}"
+              {% if dialog.owner_id == request.user.id %}
+                opponent_id="{{dialog.opponent_id}}"
+                opponent_email="{{dialog.opponent_email}}"
+                opponent_name="{{dialog.opponent_name}}"
+              {% else %}
+                opponent_id="{{dialog.owner_id}}"
+                opponent_email="{{dialog.owner_email}}"
+                opponent_name="{{dialog.owner_name}}"
+              {% endif %}
+              onclick="initializeChat(this)">
+              <div class="position-relative mr-3">
+                <img class="rounded-circle chatimage" src="{% static 'backend/img/avatars/client.png' %}" alt="User Image">
+                {% if dialog.owner_email == request.user.email %}
+                  {% if dialog.opponent_online == True %}
+                    <span class="status active"></span>
+                  {% else %}
+                    <span class="status away"></span>
+                  {% endif %}
+                {% else %}
+                  {% if dialog.owner_online == True %}
+                    <span class="status active"></span>
+                  {% else %}
+                    <span class="status away"></span>
+                  {% endif %}
+                {% endif %}
+              </div>
+              
+              <div class="media-body">
+                <div class="message-contents">
+                  <span class="d-flex justify-content-between align-items-center mb-1">
+                    {% if dialog.owner_email == request.user.email %}
+                      <span class="username text-dark">{{dialog.opponent_name}}</span>
+                    {% else %}
+                      <span class="username text-dark">{{dialog.owner_name}}</span>
+                    {% endif %}
+                    <span class="">
+                      <span class="state text-smoke timelastmessage"><em>{{dialog.msgcontenttime}}</em></span>
+                    </span>
+                  </span>
+                  <p class="last-msg text-smoke">{{dialog.msgcontent}}</p>
+                </div>
+              </div>
+            </a>
+          </li>
+          {% empty %}
+            <div class="emptydiscussion">Aucune discussion</div>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-lg-5 col-xxl-8">
+      <!-- Chat -->
+      <div class="chat-right-sidebar">
+        <div class="card-header">
+          <h2 id="userchat"></h2>
+
+          <div class="dropdown">
+            <div class="dropdown">
+              <a class="dropdown-toggle icon-burger-mini" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              </a>
+
+              <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+                <a class="dropdown-item" href="#">Profile</a>
+                <a class="dropdown-item" href="javascript:void(0)">Logout</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body pb-0" data-simplebar id="contentchat">
+          <div id="emptychat">Echanger en toute sécurité avec vos clients...</div>
+        </div>
+
+        <div class="chat-footer">
+          <div class="writechatbox">
+            <span class="write_chat">Hello</span>
+          </div>
+          <div class="input-group input-group-chat">
+            <div class="input-group-prepend">
+              <span class="emoticon-icon bx bx-emoticon-happy"></span>
+            </div>
+            <input type="text" id="new-message" placeholder="Message" class="form-control" aria-label="Text input with dropdown button">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+    

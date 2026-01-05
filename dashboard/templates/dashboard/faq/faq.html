@@ -1,0 +1,387 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static thumbnail i18n widget_tweaks countries %}
+{% block content  %}
+<div class="container-xxl flex-grow-1 container-p-y">
+
+    <div class="row g-4 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div class="content-left">
+                        <span>Tous les FAQs</span>
+                        <div class="d-flex align-items-end mt-2">
+                            <h4 class="mb-0 me-2">{{ countfaq }}</h4>
+                        </div>
+                        <small>Total</small>
+                        </div>
+                        <span class="badge bg-label-primary rounded p-2">
+                        <i class="bx bx-news bx-sm"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div class="content-left">
+                        <span>FAQs Approuvées</span>
+                        <div class="d-flex align-items-end mt-2">
+                            <h4 class="mb-0 me-2">{{ countapprovedfaq }}</h4>
+                        </div>
+                        <small>Total </small>
+                        </div>
+                        <span class="badge bg-label-danger rounded p-2">
+                        <i class="bx bx-check bx-sm"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div class="content-left">
+                        <span>FAQs En attente de Validation</span>
+                        <div class="d-flex align-items-end mt-2">
+                            <h4 class="mb-0 me-2">{{ countapprovedpendingfaq }}</h4>
+                        </div>
+                        <small>Total</small>
+                        </div>
+                        <span class="badge bg-label-success rounded p-2">
+                        <i class="bx bx-cloud-snow bx-sm"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card">
+                <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div class="content-left">
+                    <span>Réactions</span>
+                    <div class="d-flex align-items-end mt-2">
+                        <h4 class="mb-0 me-2">{{ countreaction }}</h4>
+                    </div>
+                    <small>Total</small>
+                    </div>
+                    <span class="badge bg-label-warning rounded p-2">
+                    <i class="bx bx-comment bx-sm"></i>
+                    </span>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Blog List Table -->
+    <div class="card">
+        <div class="card-header border-bottom row">
+            <h5 class="card-title col-lg-8">Liste des FAQs</h5>
+            <div class="col-lg-2 searchpage">
+                <input class="form-control" id="searchfaq" type="text" placeholder="Recherche..">
+            </div>
+            <div class="plusbtn col-lg-2" id="addfaq"><i class="fa fa-plus-circle"></i></div>
+        </div> 
+        
+        <!-- Main content -->
+        <div class="card-body">
+            <table id="filterfaq" class="table shadow-card">
+                <thead>
+                    <tr>
+                        <th>Titres</th>
+                        <th>Labels</th>
+                        <th>Catégorie</th>
+                        <th>Questions</th>
+                        <th>Reponses</th>
+                        <th>Utiles</th>
+                        <th>Pas Utiles</th>
+                        <th>Validation</th>
+                        <th>Status</th>
+                        <th>Plus ></th>
+                    </tr>
+                </thead>    
+                <tbody>
+                    {% if allfaq %}
+                        {% for item in allfaq %}
+                            <tr>
+                                <td>{{item.title}}</td>
+                                <td>{{item.label}}</td>
+                                <td>{{item.category}}</td>
+                                <td>{{item.subject}}</td>
+                                <td>{{item.content|safe}}</td>
+                                <td>
+                                    <div class="activelistitem">{{item.numberlike}}</div>
+                                </td>
+                                <td>
+                                    <div class="activelistitem">{{item.numberunlike}}</div>
+                                </td>
+                                <td>
+                                    {% if item.is_approuved == True %}
+                                        <div class="activelistitem">Approuver</div>
+                                    {% else %}
+                                        <div class="activelistitem">Non Approuver</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.is_active == True %}
+                                        <div class="activelistitem">Actif</div>
+                                    {% else %}
+                                        <div class="activelistitem">Inactif</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="dropdown optionblock">
+                                        <button class="btn dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"><p>Options</p></button>
+                                        <div class="dropdown-menu"> 
+                                            <a class="dropdown-item dropitem validationForm" href="JavaScript:void()" 
+                                                data-url="{% url 'dashboard:faq-validate'%}" 
+                                                data-id="{{item.id}}"
+                                                data-token="{{csrf_token}}"
+                                                data-message="{% if item.is_approuved %}Ce FAQ ne sera plus visible!{% else %}Ce FAQ sera desormais visible!{% endif %}"
+                                                data-type="warning">
+                                                <i class="fas fa-shield"></i> 
+                                                {% if item.is_approuved %}Deapprouver ce FAQ{% else %}Approuver ce FAQ{% endif %}
+                                            </a> 
+                                            
+                                            <a class="dropdown-item dropitem statusForm" href="JavaScript:void()" 
+                                                data-url="{% url 'dashboard:faq-status'%}" 
+                                                data-id="{{item.id}}"
+                                                data-token="{{csrf_token}}" 
+                                                data-message="{% if item.is_active %}Ce FAQ sera desormais Inactive!{% else %}Ce FAQ sera desormais Active!{% endif %}"
+                                                data-type="warning"
+                                                >
+                                                <i class="fas fa-ban"></i> 
+                                                {% if item.is_active %}Bloquer ce FAQ{% else %}Activer ce FAQ{% endif %}
+                                            </a>  
+
+                                            <a class="dropdown-item dropitem updatefaq" href="Javascript:void()"
+                                                data-id="{{item.id}}"
+                                                data-title="{{item.title}}" 
+                                                data-label="{{item.label}}" 
+                                                data-category="{{item.category}}" 
+                                                data-categoryid="{{item.categoryid}}" 
+                                                data-subject="{{item.subject|striptags}}" 
+                                                data-content="{{item.content|striptags}}" 
+                                                data-cover="{{item.cover.url}}"  
+                                            >
+                                            <i class="fas fa-edit"></i> Modifier ce FAQ</a>
+
+                                            <a class="dropdown-item dropitem deleteSubmit" href="JavaScript:void()" 
+                                                data-url="{% url 'dashboard:faq-delete'%}" 
+                                                data-id="{{item.id}}"
+                                                data-type="warning"
+                                                data-message="Attention cette opération est ireversible, cliquez sur oui pour continuer."
+                                                data-token="{{csrf_token}}">
+                                                <i class="fas fa-trash"></i> Supprimer ce FAQ</a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr >
+                            <td colspan="12" class="text-primary text-center" >
+                                <p class="emptylist">Aucun FAQ n'a été enregistré!</p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        <!-- /.content --> 
+    </div>
+
+    <!--Modal de creation des FAQs -->
+    <div class="modal fade"  id="faqCreation" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logo.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Nouveau FAQ</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="createSubmit" method="post" enctype="multipart/form-data" onsubmit="postSubmission(this)"  action="{% url 'dashboard:faq-creation' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='creator' value="{{request.user.id}}" />
+                    <div class="modal-body">
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Titre du FAQ' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="title" required placeholder="Titre... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Label du FAQ' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="label" required placeholder="Label... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Catégorie ou Service concerné' %}</p>
+                                <div class="form-group label-floating">
+                                    <select name="category" id="" class="form-control">
+                                        <option value="">Selectionner la catégorie</option>
+                                        {% for cat in allcategory %}
+                                            <option value="{{ cat.id }}">{{ cat.title }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12" >
+                                <p  class="titleform">Question</p>
+                                <div class="form-group label-floating">
+                                    <textarea name="subject" rows="10" cols="108" placeholder="Saisir votre question ici..."></textarea>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12" >
+                                <p  class="titleform">Reponse</p>
+                                <div class="form-group label-floating">
+                                    <div class="editor" style="height:20vh"></div>
+                                    <input class="form-control post-content" name="content" type="hidden"/>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Ajouter un Fichier (Ceci est Optionnel)' %}</p>
+                                <div class="form-group label-floating">
+                                    <input type="file" class="form-control"  name="file" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset" data-bs-dismiss="modal" aria-label="Close" class="btn btn-bg-secondary">{% trans 'Annuler' %}</button>
+                        <button type="submit" id="buttomcreate" class="btn newBtn createbtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+     <!--Modal de mise à jour des FAQ -->
+     <div class="modal fade"  id="faqUpdate" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logo.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Mise à jour du FAQ</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="updateSubmit" method="post" enctype="multipart/form-data" onsubmit="postSubmissionUpdate(this)"  action="{% url 'dashboard:faq-update' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='id' id="faqid" />
+                    <div class="modal-body">
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Titre du FAQ' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="title" id="faqtitle" placeholder="Titre... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Label du FAQ' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="label" id="faqlabel" placeholder="Label... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Catégorie ou Service concerné' %}</p>
+                                <div class="form-group label-floating">
+                                    <select name="category" id="faqcategory" class="form-control">
+                                        <option value="">Selectionner la catégorie</option>
+                                        {% for cat in allcategory %}
+                                            <option value="{{ cat.id }}">{{ cat.title }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                 
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12" >
+                                <p  class="titleform">Question</p>
+                                <div class="form-group label-floating">
+                                    <textarea name="subject" rows="10" cols="108" id="faqsubject" placeholder="Saisir votre question ici..."></textarea>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12" >
+                                <p  class="titleform">Reponse</p>
+                                <div class="form-group label-floating">
+                                    <div class="editorupdate" style="height:20vh"></div>
+                                    <input class="form-control post-content-update" name="content" type="hidden"/>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Ajouter un Fichier (Ceci est Optionnel)' %}</p>
+                                <div class="form-group label-floating">
+                                    <input type="file" class="form-control"  name="file" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset" data-bs-dismiss="modal" aria-label="Close" class="btn btn-bg-secondary">{% trans 'Annuler' %}</button>
+                        <button type="submit" class="btn newBtn updatebtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock content  %}

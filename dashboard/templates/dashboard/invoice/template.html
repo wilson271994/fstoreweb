@@ -1,0 +1,165 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Facture Nª FRIPME_CMD{{ commandinfo.id }}</title>
+
+        <!-- Favicon -->
+        <link rel="icon" type="image/png" href="{{ StaticUrl }}/assets/img/logo.png" />
+        <style>
+            .headerinvoice{
+                display: grid;
+            }
+            .logoinvoice{
+                width: 50%;
+            }
+            .logoinvoice img{
+                width: 100px;
+            }
+            .titleinvoice{
+                width: 50%;
+                text-align: end;
+            }
+            .titleinvoice h4{
+                font-size: 18px;
+            }
+            .bodyinvoice{
+                background-color: #fff;
+                margin: 50px;
+            }
+            .separator{
+                margin-left: 20px;
+                margin-right: 20px; 
+                margin-top: 5px;
+                margin-bottom: 10px !important;
+            }
+            .containerinvoice{
+                border: 1px solid #eee;
+            }
+            .lineinvoice{
+                display: flex;
+                width: 100%;
+            }
+            .invoicelabel{
+                width: 50%;
+                padding: 10px;
+                padding-bottom: -2px;
+            }
+            .invoicelabel p{
+                color: #666 !important;
+            }
+            .invoicevalue{
+                width: 50%;
+                padding: 10px;
+                padding-bottom: -2px;
+            }
+            .invoicevalue p{
+                color: #000;
+                font-weight: bold;
+            }
+            .bodyinvoice p{
+                font-size: 16px;
+            }
+            .invoicelabel h4{
+                font-size: 20px !important;
+                font-weight: bold;
+            }
+            .invoicevalue h4{
+                font-size: 25px !important;
+                font-weight: bold;
+            }
+            .invoicevalue h5{
+                font-size: 16px;
+                margin-bottom: 0px;
+                font-weight: 100 !important;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="card bodyinvoice">
+            <table>
+                <tbody>
+                    <td>
+                        <div class="logoinvoice">
+                            <img src="{{ StaticUrl }}/assets/img/logo.png" alt="">
+                            <p>Entreprise : {{ commandinfo.company_name }}</p>
+                            <p>Adresse : {{ commandinfo.company_address }}</p>
+                            <p>Téléphone : {{ commandinfo.company_phone }}</p>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="titleinvoice">
+                            <p>Créer le {{ commandinfo.created_date }}</p>
+                            <h4>Facture FRIPME_CMD{{ commandinfo.id }}</h4>
+                            <hr class="separator"><br>
+                            <p>Client : {{ commandinfo.customer_name }}</p>
+                            <p>Téléphone : {{ commandinfo.customer_phone }}</p>
+                        </div>
+                    </td>
+                </tbody>
+            </table>
+
+            <div class="containerinvoice">
+                <table class="lineinvoice">
+                    <tbody>
+                        <td>
+                            <div class="invoicelabel">
+                                <p>Détails de la commande </p>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="invoicevalue">
+                                <h5>Liste des Articles</h5><hr>
+                                {% for item in commandinfo.allproduct %}
+                                    <div>
+                                        <p>Nom : {{ item.name }}</p>
+                                        <p>Quantité : {{ item.quantity }}</p>
+                                        <p>Prix Total : {{ item.total }}</p>
+                                    </div>
+                                    <hr>
+                                {% endfor %}
+                            </div>
+                        </td>
+                    </tbody>
+                    <tbody>
+                        <td>
+                            <div class="invoicelabel">
+                                <p>Nombre d'article </p>
+                            </div>
+                        </td>
+                        <td>      
+                            <div class="invoicevalue">
+                                <p>{{ commandinfo.item_number }} Article(s)</p>
+                            </div>
+                        </td>
+                    </tbody>   
+                    <tbody>
+                        <td>
+                            <div class="invoicelabel">
+                                <p>Status du paiement</p>
+                            </div>
+                        </td>
+                        <td>      
+                            <div class="invoicevalue">
+                                <p>Payé</p>
+                            </div>
+                        </td>
+                    </tbody>   
+                    <tbody>
+                        <td>
+                            <div class="invoicelabel">
+                                <h4>Total</h4>
+                            </div>
+                        </td>
+                        <td>      
+                            <div class="invoicevalue">
+                                <h4>{{ commandinfo.total_price }} FCFA</h4>
+                            </div>
+                        </td>
+                    </tbody>  
+                </table>
+            </div>
+        </div>
+    </body>
+</html>

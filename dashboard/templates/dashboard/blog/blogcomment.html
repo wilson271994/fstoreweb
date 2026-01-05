@@ -1,0 +1,220 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static thumbnail i18n widget_tweaks countries %}
+{% block content  %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- banners List Table -->
+    <div class="card">
+        <div class="card-header border-bottom row">
+            <h5 class="card-title col-lg-10">Liste des Commentaires</h5>
+            <div class="col-lg-2 searchpage">
+                <input class="form-control" id="searchcomment" type="text" placeholder="Recherche..">
+            </div>
+        </div> 
+        
+        <!-- Main content -->
+        <div class="card-body">
+            <table id="filtercomment" class="table shadow-card">
+                <thead>
+                    <tr>
+                        <th>Auteurs</th>
+                        <th>Blogs</th>
+                        <th>Commentaires</th>
+                        <th>Status</th>
+                        <th>Plus ></th>
+                    </tr>
+                </thead>    
+                <tbody>
+                    {% if allcomment %}
+                        {% for item in allcomment %}
+                            <tr>
+                                <td>{{item.author}}</td>
+                                <td>{{item.blog}}</td>
+                                <td>{{item.comment|striptags}}</td>
+                                <td>
+                                    {% if item.is_block == True %}
+                                        <div class="activelistitem">Approuver</div>
+                                    {% else %}
+                                        <div class="activelistitem">Bloquer</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="dropdown optionblock">
+                                        <button class="btn dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"><p>Options</p></button>
+                                        <div class="dropdown-menu"> 
+                                            <a class="dropdown-item dropitem validationForm" href="JavaScript:void()" 
+                                                data-url="{% url 'dashboard:blog-comment-validation'%}"
+                                                data-id="{{item.id}}"
+                                                data-token="{{csrf_token}}"
+                                                data-message="{% if item.is_block %}Ce Commentaire ne sera plus visible!{% else %}Ce Commentaire sera desormais visible!{% endif %}"
+                                                data-type="warning">`
+                                                <i class="fas fa-shield"></i> 
+                                                {% if item.is_block %}Débloquer ce Commentaire{% else %}Bloquer ce Commentaire{% endif %}
+                                            </a> 
+
+                                            <a class="dropdown-item dropitem deleteSubmit" href="JavaScript:void()" 
+                                                data-url="{% url 'dashboard:blog-comment-delete'%}" 
+                                                data-id="{{item.id}}"
+                                                data-type="warning"
+                                                data-message="Attention cette opération est ireversible, cliquez sur oui pour continuer."
+                                                data-token="{{csrf_token}}">
+                                                <i class="fas fa-trash"></i> Supprimer ce Commentaire</a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr >
+                            <td colspan="7" class="text-primary text-center" >
+                                <p class="emptylist">Aucun Commentaire n'a été enregistré!</p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        <!-- /.content --> 
+    </div>
+
+    <!--Modal de creation des blogs -->
+    <div class="modal fade"  id="blogCreation" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logo.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Nouveau Blog</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="createSubmit" method="post" enctype="multipart/form-data" onsubmit="postSubmission(this)"  action="{% url 'dashboard:blog-creation' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='creator' value="{{request.user.id}}" />
+                    <div class="modal-body">
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Titre du Blog' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="title" required placeholder="Titre... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Label du Blog' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="label" required placeholder="Label... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12" >
+                                <p  class="titleform">Description</p>
+                                <div class="form-group label-floating">
+                                    <div class="editor" style="height:20vh"></div>
+                                    <input class="form-control post-content" name="description" type="hidden"/>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Image du Blog' %}</p>
+                                <div class="gallerycover"></div>
+                                <div class="form-group label-floating">
+                                    <input type="file" class="form-control add-image"  name="cover"  required />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset" data-bs-dismiss="modal" aria-label="Close" class="btn btn-bg-secondary">{% trans 'Annuler' %}</button>
+                        <button type="submit" id="buttomcreate" class="btn newBtn createbtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+     <!--Modal de mise à jour des blog -->
+     <div class="modal fade"  id="blogUpdate" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logo.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Mise à jour du Blog</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="updateSubmit" method="post" enctype="multipart/form-data" onsubmit="postSubmissionUpdate(this)"  action="{% url 'dashboard:blog-update' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='id' id="blogid" />
+                    <div class="modal-body">
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Titre du Blog' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="title" id="blogtitle" placeholder="Titre... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Label du Blog' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="label" id="bloglabel" placeholder="Label... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12" >
+                                <p  class="titleform">Description</p>
+                                <div class="form-group label-floating">
+                                    <div class="editorupdate" style="height:20vh"></div>
+                                    <input class="form-control post-content-update" name="description" type="hidden"/>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-12 col-md-12 col-xs-12">
+                            <p>Image du Blog</p>
+                            <img class="imagetoupdate" id="blogcover" />
+                        </div><br>
+
+                        <div class="col-lg-12 col-md-12 col-xs-12" >
+                            <p>{% trans  'Nouvelle Image' %}</p>
+                            <div class="gallerycoverupdate"></div>
+                            <div class="form-group label-floating" style="width: 100%;" >
+                                <input type="file" class="form-control" id="blogcover" accept="image/*" name="cover"  />
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset" data-bs-dismiss="modal" aria-label="Close" class="btn btn-bg-secondary">{% trans 'Annuler' %}</button>
+                        <button type="submit" class="btn newBtn updatebtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock content  %}

@@ -1,0 +1,722 @@
+{% load static currency_converter_tags %}
+<!DOCTYPE html>
+<html lang="fr" class="light-style layout-navbar-fixed layout-menu-fixed ">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+  <title>Fstore :: Admin</title>
+
+  <meta name="description" content=""/>
+  <meta name="keywords" content=""> 
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&amp;family=Rubik:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&amp;display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="{% static 'backend/vendor/fonts/boxicons.css' %}" />
+  <link rel="stylesheet" href="{% static 'backend/vendor/fonts/fontawesome.css' %}" />
+  <link rel="stylesheet" href="{% static 'backend/vendor/fonts/flag-icons.css' %}" />
+
+  <!-- Core CSS -->
+  <link rel="stylesheet" href="{% static 'backend/vendor/css/rtl/core.css' %}" />
+  <link rel="stylesheet" href="{% static 'backend/vendor/css/rtl/theme-semi-dark.css' %}" />
+
+  <!-- Vendors CSS -->
+  <link rel="stylesheet" href="{% static 'backend/vendor/libs/perfect-scrollbar/perfect-scrollbar.css' %}" />
+  <link rel="stylesheet" href="{% static 'backend/vendor/libs/typeahead-js/typeahead.css' %}" />
+  <link rel="stylesheet" href="{% static 'backend/vendor/libs/apex-charts/apex-charts.css' %}" />
+  <link rel="stylesheet" href="{% static 'backend/vendor/libs/select2/select2.css' %}"/>
+  <link href="{% static 'backend/vendor/DataTables/DataTables-1.10.18/css/jquery.dataTables.min.css' %}" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'backend/vendor/css/bootstrap-select.min.css' %}">
+
+  <!-- Custom Css -->
+  <link rel="stylesheet" href="{% static 'backend/css/style.css' %}" />
+  
+  <!-- Static Custom -->
+  <link rel="stylesheet" href="{% static 'backend/css/toastr.min.css' %}" />
+  <link rel="stylesheet" href="{% static 'backend/css/sweetalert2.min.css' %}" />
+  <link rel="stylesheet" href="{% static 'backend/css/loader.min.css' %}"><!-- LOADER STYLE SHEET -->
+  <link rel="stylesheet" href="{% static 'backend/css/animate.css' %}" ><!-- WOW ANIMATE STYLE SHEET -->
+  <link href="{% static 'backend/css/quill.snow.css' %}" rel="stylesheet">
+
+</head>
+
+<body id="dashboard">
+  <!-- LOADING AREA START ===== -->
+  <!-- <div class="loading-area">
+    <div class="loading-box"></div>
+    <div class="loading-pic">
+        <div class="loading">
+            <h2><img src="{% static 'backend/img/logo.png' %}" alt="#"></h2>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+    </div>
+  </div> -->
+  <!-- LOADING AREA  END ====== -->
+
+  <!-- Layout wrapper -->
+  <div class="layout-wrapper layout-content-navbar  ">
+    <div class="layout-container">
+
+      <!-- Menu -->
+      <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+        
+        <div class="app-brand demo ">
+          <a href="{% url 'dashboard:home'%}" class="app-brand-link">
+              <img src="{% static 'images/logo.png' %}" class="logoent" />
+          </a>
+
+          <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
+            <i class="bx menu-toggle-icon d-none d-xl-block fs-4 align-middle"></i>
+            <i class="bx bx-x d-block d-xl-none bx-sm align-middle"></i>
+          </a>
+        </div>
+
+        
+        <div class="menu-divider mt-0  ">
+        </div>
+
+        <div class="menu-inner-shadow"></div>
+        
+        <ul class="menu-inner py-1">
+          <!-- Dashboards -->
+          <li class="menu-item">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+              <i class="menu-icon tf-icons bx bx-home-circle"></i>
+              <div data-i18n="Dashboards">Dashboards</div> 
+            </a>
+            <ul class="menu-sub">
+              <li class="menu-item">
+                <a href="{% url 'dashboard:home'%}" class="menu-link">
+                  <div data-i18n="dashboard">dashboard</div>
+                </a>
+              </li>
+            </ul>
+          </li>
+          
+          {% if is_superuser %}
+            <li class="menu-item {% if 'user-home' in request.path %}open{% else %}{% endif %}">
+              <a href="javascript:void(0);" class="menu-link menu-toggle active">
+                <i class="menu-icon tf-icons fa fa-user-cog"></i>
+                <div data-i18n="Utilisateurs">Utilisateurs</div>
+              </a>
+              <ul class="menu-sub">
+                <li class="menu-item {% if 'user-home' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:users-page'%}" class="menu-link">
+                    <div data-i18n="Gestion des Utilisateurs">Gestion des Utilisateurs</div>
+                  </a>
+                </li>
+              </ul>
+            </li>
+
+            <li class="menu-item {% if 'home-menu' in request.path or 'home-parent-menu' in request.path or 'home-menu-rule' in request.path or 'home-profil' in request.path or 'home-user-profil' in request.path %}open{% else %}{% endif %}">
+              <a href="javascript:void(0);" class="menu-link menu-toggle active">
+                <i class="menu-icon tf-icons fa fa-shield"></i>
+                <div data-i18n="Roles & Permissions">Roles & Permissions</div>
+              </a>
+              <ul class="menu-sub">
+                <li class="menu-item {% if 'home-menu' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:home-menu'%}" class="menu-link">
+                    <div data-i18n="Gestion des Menus">Gestion des Menus</div>
+                  </a>
+                </li>
+                <li class="menu-item {% if 'home-parent-menu' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:home-parent-menu'%}" class="menu-link">
+                    <div data-i18n="Gestion des Menus Principaux">Gestion des Menus Principaux </div>
+                  </a>
+                </li>
+                <li class="menu-item {% if 'home-menu-rule' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:home-menu-rule'%}" class="menu-link">
+                    <div data-i18n="Gestion des Roles">Gestion des Roles </div>
+                  </a>
+                </li>
+                <li class="menu-item {% if 'home-profil' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:home-profil'%}" class="menu-link">
+                    <div data-i18n="Gestion des Profils">Gestion des Profils </div>
+                  </a>
+                </li>
+                <li class="menu-item {% if 'home-user-profil' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:home-user-profil'%}" class="menu-link">
+                    <div data-i18n="Gestion des Profils Utilisateurs">Gestion des Profils Utilisateurs </div>
+                  </a>
+                </li>
+              </ul>
+            </li>
+
+            <!-- Paramètrages -->
+            <li class="menu-item {% if 'advertizing-home' in request.path or 'banner-home' in request.path or 'sponsoringbooking-home' in request.path or 'currency-home' in request.path or 'index-info-company' in request.path %}open{% else %}{% endif %}">
+              <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class='menu-icon tf-icons fa fa-cog'></i>
+                <div data-i18n="Paramètrages">Paramètrages</div>
+              </a>
+              <ul class="menu-sub">
+                <li class="menu-item {% if 'index-info-company' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:index-info-company'%}" class="menu-link">
+                    <div data-i18n="Paramètrage de l'entreprise">Paramètrage de l'entreprise</div>
+                  </a>
+                </li>
+                <li class="menu-item {% if 'advertizing-home' in request.path or 'banner-home' in request.path or 'sponsoringbooking-home' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:advertizing-home'%}" class="menu-link">
+                    <div data-i18n="Advertizings">Advertizings</div>
+                  </a>
+                </li>
+                <li class="menu-item {% if 'currency-home' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:currency-home'%}" class="menu-link">
+                    <div data-i18n="Devises">Devises</div>
+                  </a>
+                </li>
+                <li class="menu-item">
+                  <a href="javascript:void(0)" class="menu-link">
+                    <div data-i18n="Sécurités">Sécurités</div>
+                  </a>
+                </li>
+              </ul>
+            </li>
+
+            <!-- Etat Financiers -->
+            <li class="menu-header small text-uppercase"><span class="menu-header-text">Reportings &amp; Finances</span></li>
+            <li class="menu-item {% if 'finance-provider' in request.path or 'finance-product' in request.path or 'finance-distributor' in request.path %}open{% else %}{% endif %}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+              <i class='menu-icon tf-icons fa fa-chart-area'></i>
+              <div data-i18n="Finances">Finances</div>
+            </a>
+            <ul class="menu-sub">
+              <li class="menu-item {% if 'finance-provider' in request.path %}active{% else %}{% endif %}">
+                <a href="{% url 'dashboard:finance-provider'%}" class="menu-link">
+                  <div data-i18n="Statistiques par Fournisseurs">Statistiques par Fournisseurs</div>
+                </a>
+              </li>
+              <li class="menu-item {% if 'finance-product' in request.path %}active{% else %}{% endif %}">
+                <a href="{% url 'dashboard:finance-product'%}" class="menu-link">
+                  <div data-i18n="Statistique par Produit">Statistique par Produit</div>
+                </a>
+              </li>
+              <li class="menu-item {% if 'finance-distributor' in request.path %}active{% else %}{% endif %}">
+                <a href="{% url 'dashboard:finance-distributor'%}" class="menu-link">
+                  <div data-i18n="Statistique par Livreur">Statistique par Livreur</div>
+                </a>
+              </li>
+            </ul>
+            </li>
+
+            <!-- Reportings -->
+            <li class="menu-item {% if 'payment-home' in request.path or 'transaction-home' in request.path %}open{% else %}{% endif %}">
+              <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class='menu-icon tf-icons fa fa-clipboard-list'></i>
+                <div data-i18n="Reportings">Reportings</div>
+              </a>
+              <ul class="menu-sub">
+                <li class="menu-item {% if 'payment-home' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:payment-home' %}" class="menu-link">
+                    <div data-i18n="Payments">Payments</div>
+                  </a>
+                </li>
+                <li class="menu-item {% if 'transaction-home' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:transaction-home' %}" class="menu-link">
+                    <div data-i18n="Transactions">Transactions</div>
+                  </a>
+                </li>
+                <li class="menu-item">
+                  <a href="javascript:void()" class="menu-link">
+                    <div data-i18n="Virements">Virements</div>
+                  </a>
+                </li>
+              </ul>
+            </li>
+
+            <!-- Apps  -->
+            <li class="menu-header small text-uppercase"><span class="menu-header-text">Produits & Commandes</span></li>
+
+            <!-- Products Management -->
+            <li class="menu-item {% if 'grantcategory' in request.path or 'childcategory' in request.path or 'parentcategory' in request.path or 'brand' in request.path or 'home-attribute' in request.path or 'home-color' in request.path or 'home-material' in request.path or 'home-size' in request.path or 'home-product' in request.path or 'provider' in request.path %}open{% else %}{% endif %}">
+              <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class='menu-icon tf-icons fa fa-cube'></i>
+                <div data-i18n="Gestion Produits">Gestion Produits</div>
+              </a>
+              <ul class="menu-sub">
+                <li class="menu-item {% if 'grantcategory' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:grantchildcategory'%}" class="menu-link">
+                    <div data-i18n="Gestion des Sous-sous catégories">Gestion des Sous-sous catégories</div>
+                  </a>
+                </li>
+                <li class="menu-item {% if 'childcategory' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:childcategory'%}" class="menu-link">
+                    <div data-i18n="Gestion des Sous-catégories">Gestion des Sous-catégories</div>
+                  </a>
+                </li> <li class="menu-item {% if 'parentcategory' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:parentcategory'%}" class="menu-link">
+                    <div data-i18n="Gestion des Catégories">Gestion des Catégories</div>
+                  </a>
+                </li>
+                <li class="menu-item {% if 'brand' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:brand'%}" class="menu-link">
+                    <div data-i18n="Gestion des Marques">Gestion des Marques</div>
+                  </a>
+                </li>
+                <li class="menu-item {% if 'home-attribute' in request.path or 'home-color' in request.path or 'home-material' in request.path or 'home-size' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:home-attribute'%}" class="menu-link">
+                    <div data-i18n="Gestion des Attributs">Gestion des Attributs</div>
+                  </a>
+                </li>
+                <li class="menu-item {% if 'provider' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:provider'%}" class="menu-link">
+                    <div data-i18n="Gestion des Fournisseurs">Gestion des Fournisseurs</div>
+                  </a>
+                </li>
+                <li class="menu-item {% if 'home-product' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:home-product'%}" class="menu-link">
+                    <div data-i18n="Gestion des Produits">Gestion des Produits</div>
+                  </a>
+                </li>
+              </ul>
+            </li>
+
+            <!-- Command Management -->
+            <li class="menu-item {% if 'command-home' in request.path or 'trafic' in request.path %}open{% else %}{% endif %}">
+              <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class='menu-icon tf-icons fa fa-shopping-basket'></i>
+                <div data-i18n="Commandes">Commandes</div>
+              </a>
+              <ul class="menu-sub">
+                <li class="menu-item {% if 'command-home' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:command-home'%}" class="menu-link">
+                    <div data-i18n="Gestion des Commandes">Gestion des Commandes</div>
+                  </a>
+                </li>
+              </ul>
+            </li>
+
+            <!-- Delivered Management -->
+            <li class="menu-item {% if 'distribution-zone' in request.path or 'trafic' in request.path %}open{% else %}{% endif %}">
+              <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class='menu-icon tf-icons fa fa-car'></i>
+                <div data-i18n="Livraisons">Livraisons</div>
+              </a>
+              <ul class="menu-sub">
+                <li class="menu-item {% if 'distribution-zone' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:distribution-zone'%}" class="menu-link">
+                    <div data-i18n="Points de livraison">Points de livraison</div>
+                  </a>
+                </li>
+                <li class="menu-item {% if 'trafic' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:trafic'%}" class="menu-link">
+                    <div data-i18n="Suivie des Livraisons">Suivie des Livraisons</div>
+                  </a>
+                </li>
+              </ul>
+            </li>
+
+            <li class="menu-item {% if 'invoices' in request.path %}open{% else %}{% endif %}">
+              <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons fa fa-file-invoice"></i>
+                <div data-i18n="Gestion des Factures">Gestion des Factures</div>
+              </a>
+              <ul class="menu-sub">
+                <li class="menu-item {% if 'invoices' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:invoices'%}" class="menu-link">
+                    <div data-i18n="Liste des Factures">Liste des Factures</div>
+                  </a>
+                </li>
+              </ul>
+            </li>
+
+            <!-- Misc -->
+            <li class="menu-header small text-uppercase"><span class="menu-header-text">Clients</span></li>
+            <li class="menu-item {% if 'customer-list' in request.path or 'customer-finance' in request.path %}open{% else %}{% endif %}">
+              <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons fa fa-users-viewfinder"></i>
+                <div data-i18n="Gestion des Clients">Gestion des Clients</div>
+              </a>
+              <ul class="menu-sub">
+                <li class="menu-item {% if 'customer-list' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:customer-list'%}" class="menu-link">
+                    <div data-i18n="Liste des clients">Liste des clients</div>
+                  </a>
+                </li>
+                <li class="menu-item {% if 'customer-finance' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:customer-finance'%}" class="menu-link">
+                    <div data-i18n="Trafic des Clients">Trafic des Clients</div>
+                  </a>
+                </li>
+              </ul>
+            </li>
+
+            <!-- Supports Techniques -->
+            <li class="menu-header small text-uppercase"><span class="menu-header-text">Communauté</span></li>
+            <li class="menu-item {% if 'blog-home' in request.path or 'faq-home' in request.path or 'faq-category-home' in request.path %}open{% else %}{% endif %}">
+              <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons fa fa-blog"></i>
+                <div data-i18n="Blog & FAQ">Blog & FAQ</div>
+              </a>
+              <ul class="menu-sub">
+                <li class="menu-item {% if 'blog-home' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:blog-home'%}" class="menu-link">
+                    <div data-i18n="Gestion du Blog">Gestion du Blog</div>
+                  </a>
+                </li>
+                <li class="menu-item {% if 'faq-category-home' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:faq-category-home'%}" class="menu-link">
+                    <div data-i18n="Catégories de FAQ">Catégories de FAQ</div>
+                  </a>
+                </li>
+                <li class="menu-item {% if 'faq-home' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:faq-home'%}" class="menu-link">
+                    <div data-i18n="Gestion du FAQ">Gestion du FAQ</div>
+                  </a>
+                </li>
+              </ul>
+            </li>
+
+            <!-- Supports Techniques -->
+            <li class="menu-header small text-uppercase"><span class="menu-header-text">Assistance</span></li>
+            <li class="menu-item {% if 'chatboot-home' in request.path or 'ticket-support-home' in request.path or 'service-support-home' in request.path %}open{% else %}{% endif %}">
+              <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons fa fa-headset"></i>
+                <div data-i18n="Support Client">Support Client</div>
+              </a>
+              <ul class="menu-sub">
+                <li class="menu-item {% if 'service-support-home' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:service-support-home'%}" class="menu-link">
+                    <div data-i18n="Gestion des Type de SAV">Gestion des Type de SAV</div>
+                  </a>
+                </li>
+
+                <li class="menu-item {% if 'ticket-support-home' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:ticket-support-home'%}" class="menu-link">
+                    <div data-i18n="Gestion des Ticket">Gestion des Ticket</div>
+                  </a>
+                </li>
+
+                <li class="menu-item {% if 'chatboot-home' in request.path %}active{% else %}{% endif %}">
+                  <a href="{% url 'dashboard:chatboot-home'%}" class="menu-link">
+                    <div data-i18n="ChatBoot">ChatBoot</div>
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <hr>
+            <br>
+          {% else %}
+            {% for item in permissions %}
+              <li class="menu-item">
+                <a href="javascript:void(0);" class="menu-link menu-toggle active">
+                  <i class="menu-icon tf-icons {{ item.icon }}"></i>
+                  <div data-i18n="{{ item.title }}">{{ item.title }}</div>
+                </a>
+                <ul class="menu-sub">
+                  {% for sub in item.submenus %}
+                    <li class="menu-item {% if sub.link in request.path %}active{% else %}{% endif %}">
+                      <a href="{{ sub.link }}" class="menu-link">
+                        <div data-i18n="{{ sub.title }}">{{ sub.title }}</div>
+                      </a>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </li>
+            {% empty %}
+              <li><center>Aucun menu disponible <br> pour votre profil, <br> contactez l'administrateur.</center></li>
+            {% endfor %}
+          {% endif %}
+        </ul>
+      </aside>
+      <!-- / Menu -->
+
+      <!-- Layout container -->
+      <div class="layout-page">
+        <!-- Navbar -->
+        <nav class="layout-navbar navbar navbar-expand-xl align-items-center bg-navbar-theme" id="layout-navbar">
+          <div class="container-fluid">
+            
+            <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0   d-xl-none ">
+              <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
+                <i class="bx bx-menu bx-sm"></i>
+              </a>
+            </div>
+            
+
+            <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+              
+              <!-- Search -->
+              <div class="navbar-nav align-items-center">
+                <div class="nav-item navbar-search-wrapper mb-0">
+                  <a class="nav-item nav-link search-toggler px-0" href="javascript:void(0);">
+                    <i class="bx bx-search-alt bx-sm"></i>
+                  </a>
+                </div>
+              </div>
+              <!-- /Search -->
+
+              <ul class="navbar-nav flex-row align-items-center ms-auto">
+                <li>
+                  Devise : FCFA
+                </li>
+
+                <!-- Language -->
+                <li class="nav-item dropdown-language dropdown me-2 me-xl-0">
+                  <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+                    <i class='fi fi-cm fis rounded-circle fs-3 me-1'></i>
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                      <a class="dropdown-item" href="javascript:void(0);" data-language="cm">
+                        <i class="fi fi-cm fis rounded-circle fs-4 me-1"></i>
+                        <span class="align-middle">French</span>
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+                <!--/ Language -->
+
+                <!-- Style Switcher -->
+                <li class="nav-item me-2 me-xl-0">
+                  <a class="nav-link style-switcher-toggle hide-arrow" href="javascript:void(0);">
+                    <i class='bx bx-sm'></i>
+                  </a>
+                </li>
+                <!--/ Style Switcher -->
+
+                <!-- Notification -->
+                <li class="nav-item dropdown-notifications navbar-dropdown dropdown me-3 me-xl-2">
+                  <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                    <i class="bx bx-bell bx-sm"></i>
+                    <span class="badge bg-danger rounded-pill badge-notifications" id="notification_counter">0</span>
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end py-0">
+                    <li class="dropdown-menu-header border-bottom">
+                      <div class="dropdown-header d-flex align-items-center py-3">
+                        <h5 class="text-body mb-0 me-auto">Notifications</h5>
+                        <a href="javascript:void(0)" class="dropdown-notifications-all text-body" data-bs-toggle="tooltip" data-bs-placement="top" title="Mark all as read"><i class="bx fs-4 bx-envelope-open"></i></a>
+                      </div>
+                    </li>
+                    <li class="dropdown-notifications-list scrollable-container">
+                      <ul class="list-group list-group-flush" id="notification_container"></ul>
+                    </li>
+                    <li class="dropdown-menu-footer border-top">
+                      <a href="javascript:void(0);" class="dropdown-item d-flex justify-content-center p-3">
+                        Voir plus
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+                <!--/ Notification -->
+
+                <!-- User -->
+                <li class="nav-item navbar-dropdown dropdown-user dropdown">
+                  <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+                    <div class="avatar avatar-online">
+                      {% if current_person.pp %}
+                        <img src="{{ current_person.pp.url }}" alt class="rounded-circle">
+                      {% else %}
+                        <img src="{% static 'backend/img/default_pp.png' %}" alt class="rounded-circle">
+                      {% endif %}
+                    </div>
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                      <a class="dropdown-item" href="javascript:void(0);">
+                        <input type="hidden" id="user_id" value="{{ request.user.id }}">
+                        <div class="d-flex">
+                          <div class="flex-shrink-0 me-3">
+                            <div class="avatar avatar-online">
+                            {% if current_person.pp %}
+                              <img src="{{ current_person.pp.url }}" alt class="rounded-circle">
+                            {% else %}
+                              <img src="{% static 'backend/img/default_pp.png' %}" alt class="rounded-circle">
+                            {% endif %}
+                            </div>
+                          </div>
+                          <div class="flex-grow-1">
+                            <span class="fw-semibold d-block lh-1">{{request.user.last_name}}</span>
+                            <small>Admin</small>
+                          </div>
+                        </div>
+                      </a>
+                    </li>
+                    <li>
+                      <div class="dropdown-divider"></div>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="javascript:void(0);">
+                        <i class="bx bx-user me-2"></i>
+                        <span class="align-middle">Mon Profile</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="javascript:void(0);">
+                        <i class="bx bx-cog me-2"></i>
+                        <span class="align-middle">Paramétres</span>
+                      </a>
+                    </li>
+                    <li>
+                      <div class="dropdown-divider"></div>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="">
+                        <i class="bx bx-support me-2"></i>
+                        <span class="align-middle">Support & Aide</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="javascript:void(0);">
+                        <i class="bx bx-help-circle me-2"></i>
+                        <span class="align-middle">FAQ</span>
+                      </a>
+                    </li>
+                    <li>
+                      <div class="dropdown-divider"></div>
+                    </li>
+                    <li>
+                      <a class="dropdown-item Logout" data-url="{% url 'core:auth-logout' %}" href="javascript:void(0);">
+                        <i class="bx bx-power-off me-2"></i>
+                        <span class="align-middle">Déconnexion</span> 
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+                <!--/ User -->
+        
+              </ul>
+            </div>
+
+            <!-- Search Small Screens -->
+            <div class="navbar-search-wrapper search-input-wrapper  d-none">
+              <input type="text" class="form-control search-input container-fluid border-0" placeholder="Search..." aria-label="Search...">
+              <i class="bx bx-x bx-sm search-toggler cursor-pointer"></i>
+            </div>
+
+          </div>
+        </nav>
+        <!-- / Navbar -->
+
+        <!-- Content wrapper -->
+        <div class="content-wrapper">
+
+          <!-- Content -->
+          {% block content %}{% endblock content %}
+          <!-- / Content -->
+
+              <!-- Footer -->
+              <footer class="content-footer footer bg-footer-theme">
+                <div class="container-fluid d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                  <div class="mb-2 mb-md-0">
+                    © <script>
+                    document.write(new Date().getFullYear())
+                    </script>
+                    Tous droits reservés à Frank Store, <a href="https://poly-h.net" target="_blank" class="footer-link fw-semibold">Développé par PolyH Technology.</a>
+                  </div>
+
+                  <div>
+                    <a href="#" class="footer-link me-4" target="_blank">License</a>
+                    <a href="#" target="_blank" class="footer-link me-4">Documentation</a>
+                    <a href="#" target="_blank" class="footer-link d-none d-sm-inline-block">Support & Aide</a>
+                  </div>
+                </div>
+              </footer>
+              <!-- / Footer -->
+            
+            <div class="content-backdrop fade"></div>
+          </div>
+          <!-- Content wrapper -->
+        </div>
+
+        <!-- / Layout page -->
+      </div>
+      
+      <!-- Overlay -->
+      <div class="layout-overlay layout-menu-toggle"></div>
+      
+      <!-- Drag Target Area To SlideIn Menu On Small Screens -->
+      <div class="drag-target"></div>
+    </div>
+
+    <!-- / Layout wrapper -->
+    <div class="buy-now">
+      <a href="#" class="btn btn-primary btn-buy-now" onclick="topFunction()" id="scrrolBtn"><i class="fa fa-angle-up"></i></a>
+    </div>
+  </div>
+    
+  <!-- Core JS -->
+  <!-- build:js assets/vendor/js/core.js' -->
+  <script src="{% static 'backend/vendor/libs/jquery/jquery.js' %}"></script>
+  <script src="{% static 'backend/vendor/libs/popper/popper.js' %}"></script>
+  <script src="{% static 'backend/vendor/js/bootstrap.js' %}"></script>
+  <script src="{% static 'backend/vendor/libs/perfect-scrollbar/perfect-scrollbar.js' %}"></script>
+  
+  <script src="{% static 'backend/vendor/libs/hammer/hammer.js' %}"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/i18n/fr.min.js" ></script>
+
+  <script src="{% static 'backend/vendor/libs/i18n/i18n.js' %}"></script>
+  <script src="{% static 'backend/vendor/libs/typeahead-js/typeahead.js' %}"></script>
+  
+  <script src="{% static 'backend/vendor/js/menu.js' %}"></script>
+  <!-- endbuild -->
+
+  <!-- Vendors JS -->
+  <script src="{% static 'backend/vendor/libs/apex-charts/apexcharts.js' %}"></script>
+  <script src="{% static 'backend/vendor/DataTables/DataTables-1.10.18/js/jquery.dataTables.min.js' %}"></script>
+  
+  <!-- Vendors JS -->
+  <script src="{% static 'backend/vendor/libs/moment/moment.js' %}"></script>
+  <script src="{% static 'backend/vendor/libs/select2/select2.js' %}"></script>
+  <script src="{% static 'backend/vendor/libs/cleavejs/cleave.js' %}"></script>
+  <script src="{% static 'backend/vendor/libs/cleavejs/cleave-phone.js' %}"></script>
+  <script src="{% static 'backend/vendor/js/quill.js' %}"></script>
+  <script src="{% static 'backend/vendor/js/bootstrap-select.min.js' %}"></script>
+  <script src="{% static 'backend/vendor/js/helpers.js' %}"></script>
+  <script src="{% static 'backend/vendor/js/template-customizer.js' %}"></script>
+
+  <!-- Main JS -->
+  <script src="{% static 'backend/js/staticscript/config.js' %}"></script>
+  <script src="{% static 'backend/js/staticscript/main.js' %}"></script>
+  <script src="{% static 'backend/js/staticscript/dashboards-analytics.js' %}"></script>
+  <script src="{% static 'backend/js/staticscript/toastr.min.js' %}"></script>
+  <script src="{% static 'backend/js/staticscript/sweetalert2.min.js' %}"></script>
+
+  <!-- <script src="{% static 'backend/js/staticscript/websocketbridge.js' %}"></script> -->
+
+  <script src="{% static 'backend/js/custom/notification.js' %}"></script>
+
+  <!-- Custom JS -->
+  <script src="{% static 'backend/js/custom/script.js' %}"></script>
+  <script src="{% static 'backend/js/custom/users.js' %}"></script>
+  <script src="{% static 'backend/js/custom/seller.js' %}"></script>
+  <script src="{% static 'backend/js/custom/brand.js' %}"></script>
+  <script src="{% static 'backend/js/custom/category.js' %}"></script>
+  <script src="{% static 'backend/js/custom/attribute.js' %}"></script>  
+  <script src="{% static 'backend/js/custom/product.js' %}"></script>
+  <script src="{% static 'backend/js/custom/distzone.js' %}"></script>
+  <script src="{% static 'backend/js/custom/financeseller.js' %}"></script>
+  <script src="{% static 'backend/js/custom/financeproduct.js' %}"></script>
+  <script src="{% static 'backend/js/custom/financedistributor.js' %}"></script>
+  <script src="{% static 'backend/js/custom/financecustomer.js' %}"></script>
+  <script src="{% static 'backend/js/custom/customer.js' %}"></script>
+  <script src="{% static 'backend/js/custom/chatboot.js' %}"></script>
+  <script src="{% static 'backend/js/custom/devise.js' %}"></script>
+  <script src="{% static 'backend/js/custom/advertizing.js' %}"></script>
+  <script src="{% static 'backend/js/custom/bank.js' %}"></script>
+  <script src="{% static 'backend/js/custom/company.js' %}"></script>
+  <script src="{% static 'backend/js/custom/blog.js' %}"></script>
+  <script src="{% static 'backend/js/custom/faq.js' %}"></script>
+  <script src="{% static 'backend/js/custom/support.js' %}"></script>
+  <script src="{% static 'backend/js/custom/trafic.js' %}"></script>
+  <script src="{% static 'backend/js/custom/security.js' %}"></script>
+  <script src="{% static 'backend/js/custom/provider.js' %}"></script>
+  
+</body>
+
+
+</html>
+

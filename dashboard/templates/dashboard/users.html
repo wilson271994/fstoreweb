@@ -1,0 +1,623 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static thumbnail i18n widget_tweaks countries %}
+{% block content  %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row g-4 mb-4">
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Utilisateurs</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">{{countalluser}}</h4>
+                </div>
+                <small>Total</small>
+                </div>
+                <span class="badge bg-label-primary rounded p-2">
+                <i class="bx bx-user bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Utilisateurs Inactifs</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">{{userinactive}}</h4>
+                </div>
+                <small>Total </small>
+                </div>
+                <span class="badge bg-label-danger rounded p-2">
+                <i class="bx bx-user-plus bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Utilisateurs Actifs</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">{{useractive}}</h4>
+                </div>
+                <small>Total</small>
+                </div>
+                <span class="badge bg-label-success rounded p-2">
+                <i class="bx bx-group bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Comming Soon</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">0</h4>
+                </div>
+                <small>Total</small>
+                </div>
+                <span class="badge bg-label-warning rounded p-2">
+                <i class="bx bx-user-voice bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Users List Table -->
+    <div class="card">
+        <div class="card-header border-bottom row">
+            <h5 class="card-title col-lg-7">Listes des Utilisateurs</h5>
+            <div class="col-lg-3 searchpage">
+                <input class="form-control" id="searchuser" type="text" placeholder="Recherche..">
+            </div>
+            <div class="plusbtn col-lg-2" id="adduser"><i class="fa fa-plus-circle"></i></div>
+        </div> 
+        
+        <!-- Main content -->
+        <div class="card-body">
+        <table id="filteruser" class="table shadow-card">
+            <thead>
+                <tr>
+                    <th>Photos</th>
+                    <th>Noms</th>
+                    <th>emails</th>
+                    <th>Téléphones</th>
+                    <th>Type d'utilisateur</th>
+                    <th>Status</th>
+                    <th>Plus ></th>
+                </tr>
+            </thead>    
+            <tbody>
+                {% if allperson %}
+                    {% for person in allperson %}
+                        <tr>
+                            <td>
+                                {% if person.pp %}
+                                    <img src="{{ person.pp.url }}" class='img-circle elevation-2 pp_user'/>
+                                {% else %}
+                                    <img src="{% static 'backend/img/default_pp.png' %}" class='img-circle elevation-2 pp_user'/>
+                                {% endif %}
+                            </td>
+                            <td>{{person.name}}</td>
+                            <td>{{person.email}}</td>
+                            <td>{{person.phone}} </td>
+
+                            <td>
+                                {% if person.is_customer %}
+                                    <div class="activelistitem">Client</div>
+                                {% elif person.is_staff %}
+                                    <div class="activelistitem">Employé</div>
+                                {% else  %}
+                                    <div class="activelistitem">Administrateur</div>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if person.is_active == True %}
+                                    <div class="activelistitem">Actif</div>
+                                {% else %}
+                                    <div class="activelistitem">Inactif</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="dropdown optionblock">
+                                    <button class="btn dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"><p>Options</p></button>
+                                    <div class="dropdown-menu"> 
+                                        <a class="dropdown-item dropitem statusForm" href="JavaScript:void()" 
+                                            data-url="" 
+                                            data-id="{{person.id}}"
+                                            data-token="{{csrf_token}}" 
+                                            data-message="{% if person.is_active %}Le compte de cette Utilisateur sera desormais Inactif!{% else %}Le compte de cette Utilisateur sera desormais Actif!{% endif %}"
+                                            data-type="warning"
+                                            >
+                                            <i class="fas fa-ban"></i> 
+                                            {% if person.type_user == 'customer' %}
+                                                Activer ce client
+                                            {% elif person.type_user == 'staff'  %}
+                                                Activer cet employé
+                                            {% elif person.type_user == 'admin'  %}
+                                                Activer cet administrateur
+                                            {% endif %}
+                                        </a>  
+
+                                        <a class="dropdown-item dropitem detailuser" 
+                                            href="Javascript:void()"
+                                            data-name="{{person.name}}"
+                                            data-email="{{person.email}}"
+                                            data-phone="{{person.phone}}"
+                                        >
+                                        <i class="fas fa-eye"></i> Détail du Compte</a>
+
+                                        <a class="dropdown-item dropitem updateuser" href="Javascript:void()"
+                                            data-id                 = "{{person.id}}"
+                                            data-userid             = "{{person.id_user}}"
+                                            data-firstname          = "{{person.first_name}}"
+                                            data-lastname           = "{{person.last_name}}"
+                                            data-ownersexe          = "{{person.sexe}}"
+                                            data-ownerbithday       = "{{person.birthday_date}}"
+                                            data-email              = "{{person.email}}"
+                                            data-phone              = "{{person.phone}}"
+                                            data-address            = "{{person.address}}"
+                                            data-codepostal         = "{{person.codepostal}}"
+                                            data-countryid          = "{{person.countryid}}"
+                                            data-countryname        = "{{person.country}}"
+                                            data-city               = "{{person.city}}"
+                                            data-cityid             = "{{person.cityid}}"
+                                            data-identification     = "{{person.identification}}"
+                                            data-identificationid   = "{{person.identificationID}}"
+                                            data-typeidentification = "{{person.type_identification}}"
+                                            data-description        = "{{person.description}}"
+                                            data-storenumberrc      = "{{person.CRnumber}}"
+                                            data-documentrc         = "{{person.registrecommerce}}"
+                                            data-resaonsocial       = "{{person.resaonsocial}}"
+                                            data-googlemap          = "{{person.googlemap}}"
+                                            data-typeuser           = "{{person.type_user}}"
+                                        >
+                                        <i class="fas fa-edit"></i> Modifier les informations</a>
+
+                                        <a class="dropdown-item dropitem resetpassuser" href="Javascript:void()"
+                                            data-email="{{person.email}}">
+                                        <i class="fas fa-key"></i> Réinitialiser le mot de passe</a>
+
+                                        <a class="dropdown-item dropitem deleteSubmit" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:user-delete'%}" 
+                                            data-id="{{person.id_user}}"
+                                            data-type="warning"
+                                            data-message="Cette utilisateur sera supprimer. Attention cette opération est irreversible!"
+                                            data-token="{{csrf_token}}">
+                                            <i class="fas fa-trash"></i> Supprimer ce Compte</a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr >
+                        <td colspan="7" class="text-primary text-center" >
+                            <p class="emptylist">Aucun Utilisateurs n'a été enregistré!</p>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        </div>
+        <!-- /.content -->  
+
+    </div>
+
+    <!--Modal de creation des utilisateurs -->
+    <div class="modal fade"  id="userCreation" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Nouveau Utilisateur</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="createSubmit" method="post" enctype="multipart/form-data" onsubmit="postSubmission(this)"  action="{% url 'dashboard:user-creation' %}">
+                    {% csrf_token %}
+                    <input type='hidden' class='username'  name='username' />
+                    <div class="modal-body">
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Type d\'Utilisateur' %} <span class="mandatoryindex">*</span></p>
+                                <select name="type_user" id="type_user" required class="form-group label-floating selectinputform">
+                                    <option>Selectionner</option>
+                                    <option value="customer">Client</option>
+                                    <option value="staff">Employé</option>
+                                    <option value="admin">Administrateur</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <p>{% trans  'Nom de l\'utilisateur' %} <span class="mandatoryindex">*</span></p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="first_name" required placeholder="Nom... " />
+                                    <hr>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <p>{% trans  'Prénom de l\'utilisateur' %} <span class="mandatoryindex">*</span></p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="last_name" required placeholder="Prénom... " />
+                                    <hr>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <p>{% trans  'Pseudo Utilisateur' %} <span class="mandatoryindex">*</span></p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="username" required placeholder="Ne doit pas avoir de caractère spéciaux... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Sexe' %} <span class="mandatoryindex">*</span></p>
+                                <select name="sexe" class="form-group label-floating selectinputform" required>
+                                    <option>Selectionner</option>
+                                    <option value="Masculin">Masculin</option>
+                                    <option value="Féminin">Féminin</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Date de naissance' %} <span class="mandatoryindex">*</span></p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type='date'  name="birthday_date" required placeholder="Birthday date... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Adresse email' %} <span class="mandatoryindex">*</span></p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type="email"  name="email" required placeholder="Adresse Email..." />
+                                    <hr>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Téléphone' %} <span class="mandatoryindex">*</span></p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type="number"  name="phone" required placeholder="Téléphone..."  />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Adresse' %} <span class="mandatoryindex">*</span></p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type="text"  name="address" required placeholder="Adresse de l'utilisateur..." />
+                                    <hr>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Boite Postal' %} <span class="mandatoryindex">*</span></p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type="text"  name="codepostal" required placeholder="Boite Poatal de l'utilisateur..." />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row blockformitem">
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Pays' %} <span class="mandatoryindex">*</span></p>   
+                                <select name="country" class="form-control form-select selectedcountry">
+                                    <option value="">Selectionner le Pays</option>
+                                    {% for item in allcountry %}
+                                        <option value="{{ item.id }}">{{ item.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <input type="hidden" class="paramsgetcities" data-url="{% url 'core:country-cities'%}" data-token="{{csrf_token}}" />
+                            </div>
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Ville' %} <span class="mandatoryindex">*</span></p>
+                                <select name="city"  class="form-group label-floating selectinputform cityidvalue" data-allow-clear="true" required>
+                                    <option>Selectionner</option>
+                                </select>
+                            </div>
+                        </div>
+                        <hr>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-4 col-md-12 col-xs-12" >
+                                <p>{% trans 'Pièce d\'identité' %} <span class="mandatoryindex">*</span></p>
+                                <div class="form-group label-floating">
+                                    <select name="type_identification" class="form-group label-floating selectinputform" required>
+                                        <option value="">Selectionner</option>
+                                        <option value="1">CNI</option>
+                                        <option value="2">PassePort</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <p>{% trans  'Numéro de la pièce' %} <span class="mandatoryindex">*</span></p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type="text"  name="identificationID" required placeholder="Numéro..." />
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <p>{% trans  'Scan de la Pièce' %} <span class="mandatoryindex">*</span></p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type="file"  name="identification" required  />
+                                </div>
+                            </div>
+                        </div><hr>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Photo de Profile' %}</p>
+                                <input type="file" name="pp" class="form-control">
+                            </div>
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Photo de courverture' %}</p>
+                                <input type="file" name="cover" class="form-control">
+                            </div>
+                        </div>
+                        <hr>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans 'Mot de passe' %} <span class="mandatoryindex">*</span></p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type="password"  name="password1" required placeholder="Mot de passe..." />
+                                    <hr>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans 'Confirmer le mot de passe' %} <span class="mandatoryindex">*</span></p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type="password"  name="password2" required placeholder="Confirmation..." />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-12">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="basic-default-checkbox" required />
+                                <label class="form-check-label" for="basic-default-checkbox">Accepter les conditions de confidentialités <span class="mandatoryindex">*</span></label>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeadduser">{% trans 'Annuler' %}</button>
+                        <button type="submit" id="buttomcreate" class="btn newBtn createbtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal de mise a jour des utilisateurs -->
+    <div class="modal fade"  id="userUpdate" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo Kops Market" class="logomodal">
+                    <h4 class="modal-title">Mise à jour des informations de l'utilisateur</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="updateSubmit" method="post" enctype="multipart/form-data" onsubmit="postSubmissionUpdate(this)" action="{% url 'dashboard:user-update' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <input type="hidden" name="person_id" id="personid">
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <p>{% trans  'Nom de l\'utilisateur' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="first_name" id="personfirstname" placeholder="Nom... " />
+                                    <hr>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <p>{% trans  'Prénom de l\'utilisateur' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="last_name" id="personlastname" placeholder="Prénom... " />
+                                    <hr>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <p>{% trans  'Pseudo Utilisateur' %} <span class="mandatoryindex">*</span></p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="username" id="personusername" placeholder="Ne doit pas avoir de caractère spéciaux... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Sexe' %}</p>
+                                <select name="sexe" id="personsexe" class="form-group label-floating selectinputform">
+                                    <option>Selectionner</option>
+                                    <option value="Masculin">Masculin</option>
+                                    <option value="Féminin">Féminin</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Date de naissance' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type='date' pattern="\d{4}-\d{2}-\d{2}" id="personbirthdaydate"  name="birthday_date" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Adresse email' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type="email" id="personemail"  name="email" placeholder="Adresse Email..." />
+                                    <hr>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Téléphone' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type="number"  name="phone" id="personphone" placeholder="Téléphone..." />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <div class="row blockformitem"> 
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Pays' %}</p>
+                                <select name="country" class="form-control form-select selectedcountry3" id="personcountry">
+                                    {% for item in allcountry %}
+                                        <option value="{{ item.id }}">{{ item.name }}</option>
+                                    {% endfor %} 
+                                </select>
+                                <input type="hidden" class="paramsgetcities" data-url="{% url 'core:country-cities'%}" data-token="{{csrf_token}}" />
+                            </div>
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Ville' %}</p>
+                                <select name="city"  class="form-group label-floating selectinputform cityuseridvalue" data-allow-clear="true" id="personcity">
+                                    <option>Selectionner</option>
+                                </select>
+                            </div>
+                        </div>
+                        <hr>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Adresse' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type="text"  name="address" id="personaddress" placeholder="Adresse..." />
+                                    <hr>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Boite Postal' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type="text"  name="codepostal" id="personcodepostal" placeholder="Boite Poatal de l'utilisateur..." />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-4 col-md-12 col-xs-12" >
+                                <p>{% trans 'Pièce d\'identité' %}</p>
+                                <div class="form-group label-floating">
+                                    <select name="type_identification" class="form-group label-floating selectinputform typenidcart" id="persontypeidentification">
+                                        <option>Selectionner</option>
+                                        <option value="1">CNI</option>
+                                        <option value="2">PassePort</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <p>{% trans  'Numéro de la pièce' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" id="personidentificationID" type="text"  name="identificationID" placeholder="Numéro..." />
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-xs-12">
+                                <p>{% trans  'Scan de la Pièce' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type="file" id="personnid"  name="identification"  />
+                                </div>
+                            </div>
+                        </div><hr>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Photo de Profile' %}</p>
+                                <input type="file" name="pp" class="form-control">
+                            </div>
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Photo de courverture' %}</p>
+                                <input type="file" name="cover" class="form-control">
+                            </div>
+                        </div>
+                        <hr>
+
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeupdateuser">{% trans 'Annuler' %}</button>
+                        <button type="submit" id="buttomcreate" class="btn newBtn updatebtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal de reenitialisation de mot de passe des utilisateurs -->
+    <div class="modal fade"  id="userPassword" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo Kops Market" class="logomodal">
+                    <h4 class="modal-title">Réinitialiser le mot de passe</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="createSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:user-password-reset'%}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <input type="hidden" name="useremail" id="userinfo">
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans 'Nouveau mot de passe' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type="password"  name="new_password1" required placeholder="Mot de passe..." />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans 'Confirmer le mot de passe' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type="password"  name="new_password2" required placeholder="Confirmation..." />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset" class="btn btn-bg-secondary closeupdatepass">{% trans 'Annuler' %}</button>
+                        <button type="submit" class="btn newBtn createbtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock content  %}

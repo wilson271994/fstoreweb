@@ -1,0 +1,157 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static thumbnail i18n widget_tweaks countries %}
+{% block content  %}
+<div class="container-xxl flex-grow-1 container-p-y">
+
+    <!-- grantchildcategory List Table -->
+    <div class="card">
+        <div class="card-header border-bottom row">
+            <h5 class="card-title col-lg-7">Liste des Sous-Sous Catégories</h5>
+            <div class="col-lg-3 searchpage">
+                <input class="form-control" id="searchgrantchildcategory" type="text" placeholder="Recherche..">
+            </div>
+            <div class="plusbtn col-lg-2" id="addgrantchildcategory"><i class="fa fa-plus-circle"></i></div>
+        </div> 
+        
+        <!-- Main content -->
+        <div class="card-body">
+        <table id="filtergrantchildcategory" class="table shadow-card">
+            <thead>
+                <tr>
+                    <th>Intitulés</th>
+                    <th>Créer par</th>
+                    <th>Status</th>
+                    <th>Plus ></th>
+                </tr>
+            </thead>    
+            <tbody>
+                {% if allparentcategory %}
+                    {% for grantchildcategory in allparentcategory %}
+                        <tr>
+                            <td>{{grantchildcategory.name}}</td>
+                            <td>{{grantchildcategory.author}}</td>
+                            <td>
+                                {% if grantchildcategory.is_active == True %}
+                                    <div class="activelistitem">Actif</div>
+                                {% else %}
+                                    <div class="activelistitem">Inactif</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="dropdown optionblock">
+                                    <button class="btn dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"><p>Options</p></button>
+                                    <div class="dropdown-menu"> 
+                                        <a class="dropdown-item dropitem validategrantchildcategory" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:status-grantchild-category'%}" 
+                                            data-id="{{grantchildcategory.id}}"
+                                            data-token="{{csrf_token}}" 
+                                            onclick="grantchildcategoryStatus(this)">
+                                        <i class="fas fa-ban"></i> Activer/Deactiver</a> 
+                                        
+                                        <a class="dropdown-item dropitem updategrantchildcategory" href="Javascript:void()"
+                                            data-id="{{grantchildcategory.id}}"
+                                            data-name="{{grantchildcategory.name}}"
+                                        >
+                                        <i class="fas fa-edit"></i> Modifier</a>
+
+                                        <a class="dropdown-item dropitem deleteSubmit" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:delete-grantchild-category'%}" 
+                                            data-id="{{grantchildcategory.id}}"
+                                            data-type="warning"
+                                            data-message="Attention cette opération est ireversible, cliquez sur oui pour continuer."
+                                            data-token="{{csrf_token}}">
+                                            <i class="fas fa-trash"></i> Supprimer</a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr >
+                        <td colspan="7" class="text-primary text-center" >
+                            <p class="emptylist">Aucune Sous-sous categorie n'a été enregistré!</p>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        </div>
+        <!-- /.content --> 
+
+    </div>
+
+    <!--Modal de creation des grantchildcategorys -->
+    <div class="modal fade"  id="grantchildcategoryCreation" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Nouvelle Sous-Sous Catégorie</h4>
+                    <button type="button" class="close closeaddgrantchildcategory" data-dismiss="modal">&times;</button>
+                </div>  
+                <!-- Modal body -->
+                <form class="createSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:create-grantchild-category' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='creator' value="{{request.user.id}}" />
+                    <div class="modal-body">
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Intitulé de la catégorie' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="name" required placeholder="Catégorie... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeaddgrantchildcategory">{% trans 'Annuler' %}</button>
+                        <button type="submit" id="buttomcreate" class="btn newBtn createbtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal de update des grantchildcategorys -->
+    <div class="modal fade"  id="grantchildcategoryUpdate" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Nouvelle Sous-Sous Catégorie</h4>
+                    <button type="button" class="close closeaddgrantchildcategory" data-dismiss="modal">&times;</button>
+                </div>  
+                <!-- Modal body -->
+                <form class="updateSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:update-grantchild-category' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <input type="hidden" name="id" id="grandchildid">
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Intitulé de la catégorie' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="name" id="grandchildname" required placeholder="Catégorie... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeaddgrantchildcategory">{% trans 'Annuler' %}</button>
+                        <button type="submit" id="buttomcreate" class="btn newBtn Updatebtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock content  %}

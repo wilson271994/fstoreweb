@@ -1,0 +1,633 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static thumbnail i18n widget_tweaks countries %}
+{% block content %} 
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="box">
+        <div class="box-header headerpage row">
+            <div class="col-lg-10">
+                <h3 class="box-title">Information sur Frank Store</h3>
+            </div>
+            <div class="col-lg-2 btnaddbox">
+                <button class="btn btn-seconday addnew" data-bs-toggle="modal" 
+                    data-bs-target="#updateInfoModal"
+                    data-vision="{{ company.vision }}"
+                    data-mission="{{ company.mission }}">Mettre à jour les infos</button>
+            </div>
+        </div>
+        <hr>
+
+        <!-- Mission et Vision  -->
+        <div class="containeritem row">
+            <h4>Vision & Mission</h4>
+            <div class="containernamecompany">
+                <h4>{{ company.name }}</h4>
+            </div>
+            <div class="visioncss">
+                <h4>Notre Vision</h4>
+                <hr>
+                {{ company.vision|striptags }}
+            </div>
+            <div class="missioncss">
+            <h4>Notre Mission</h4>
+            <hr>
+            {{ company.mission|striptags }}
+            </div>
+        </div><br>
+
+        <!-- Nos Valeurs  -->
+        <div class="containeritem row">
+            <div class="row headeritem">
+                <h4 class="col-lg-10">Nos valeurs</h4>
+                <div class="col-lg-2 btnaddbox">
+                    <button class="btn btn-seconday addnew" data-bs-toggle="modal" 
+                        data-bs-target="#valueCompanyModal">Ajouter une valeur</button>
+                </div>
+            </div>
+            <div class="itemvalue">
+                {% for item in company.values %}    
+                    <div class="row">
+                        <div class="row bloccompanyvalue">
+                            <div class="valuelabel">
+                                <p>{{ item.label }} :</p>
+                            </div>
+                            <div class="valueval">
+                                <p>{{ item.value }}</p>
+                            </div>
+                            <hr class="ligneitemvalue" />
+                        </div>
+
+                        <div class="planningitem optionbtnabout">
+                            <button
+                                class="deleteSubmit"
+                                data-id="{{item.id}}"
+                                data-message="Cette valeur sera supprimer!"
+                                data-type="warning"
+                                data-url="{% url 'dashboard:delete-value-company'%}" 
+                                data-token="{{csrf_token}}"
+                            ><i class="fa fa-trash"></i></button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div><br>
+
+        <!-- Contact -->
+        <div class="containeritem row">
+            <div class="row headeritem">
+                <h4 class="col-lg-10">Contacts</h4>
+                <div class="col-lg-2 btnaddbox">
+                    <button class="btn btn-seconday addnew" data-bs-toggle="modal" 
+                        data-bs-target="#contactCompanyModal">Ajouter un contact</button>
+                </div>
+            </div>
+            <div class="itemvalue">
+                {% for item in company.contacts %}
+                    <div class="row">
+                        <div class="contactitem">
+                            <p>{{ item.phone }}</p>
+                        </div>
+
+                        <div class="planningitem optionbtnabout"> 
+                            <button
+                                class="deleteSubmit" 
+                                data-id="{{item.id}}"
+                                data-message="Cette réseau sera supprimer!"
+                                data-type="warning"
+                                data-url="{% url 'dashboard:delete-phone-company'%}" 
+                                data-token="{{csrf_token}}"
+                            ><i class="fa fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <hr class="ligneitemvalue" />
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Adresse Email  -->
+        <div class="containeritem row">
+            <div class="row headeritem">
+                <h4 class="col-lg-10">Adresse Emails</h4>
+                <div class="col-lg-2 btnaddbox">
+                    <button class="btn btn-seconday addnew" data-bs-toggle="modal" 
+                        data-bs-target="#emailCompanyModal">Ajouter un email</button>
+                </div>
+            </div>
+            <div class="itemvalue">
+                {% for item in company.emails %}
+                    <div class="row">
+                        <div class="contactitem">
+                            <p>{{ item.email }}</p>
+                        </div>
+
+                        <div class="planningitem optionbtnabout">
+                            <button
+                                class="deleteSubmit"
+                                data-id="{{item.id}}"
+                                data-message="Cette adresse email sera supprimer!"
+                                data-type="warning"
+                                data-url="{% url 'dashboard:delete-email-company'%}" 
+                                data-token="{{csrf_token}}"
+                            ><i class="fa fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <hr class="ligneitemvalue" />
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Reseau Sociaux  -->
+        <div class="containeritem row">
+            <div class="row headeritem">
+                <h4 class="col-lg-10">Réseaux sociaux</h4>
+                <div class="col-lg-2 btnaddbox">
+                    <button class="btn btn-seconday addnew" data-bs-toggle="modal" 
+                        data-bs-target="#socialCompanyModal">Ajouter un réseau</button>
+                </div>
+            </div>
+            <div class="itemvalue">
+                {% for item in company.socials %}
+                    <div class="row">
+                        <div class="row">
+                            <div class="socialitem">
+                                <p>{{ item.name }}</p>
+                            </div>
+                            <div class="socialitem">
+                                <p>{{ item.link }}</p>
+                            </div>
+                            <div class="socialitem">
+                                <p>{{ item.faicon }}</p>
+                            </div>
+                        </div>
+
+                        <div class="planningitem optionbtnabout">
+                            <button
+                                class="deleteSubmit"
+                                data-id="{{item.id}}"
+                                data-message="Cette réseau sera supprimer!"
+                                data-type="warning"
+                                data-url="{% url 'dashboard:delete-social-company'%}" 
+                                data-token="{{csrf_token}}"
+                            ><i class="fa fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <hr class="ligneitemvalue" /> 
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Localisation -->
+        <div class="containeritem row">
+            <div class="row headeritem">
+                <h4 class="col-lg-10">Adresses</h4>
+                <div class="col-lg-2 btnaddbox">
+                    <button class="btn btn-seconday addnew" data-bs-toggle="modal" 
+                        data-bs-target="#createAddressCompanyModal">Ajouter une Adresse</button>
+                </div>
+            </div>
+            <div class="itemvalue">
+                {% for item in company.addresses %}
+                    <div class="row">
+                        <div class="addressitem">
+                            <p>{{ item.continent }}</p>
+                        </div>
+                        <div class="addressitem">
+                            <p>{{ item.country }}</p>
+                        </div>
+                        <div class="addressitem">
+                            <p>{{ item.city }}</p>
+                        </div>
+                        <div class="addressitem">
+                            <p>{{ item.address }}</p>
+                        </div>
+                        <div class="addressitem">
+                            <p>{{ item.is_default }}</p>
+                        </div>
+
+                        <div class="addressitem optionbtnabout">
+                            <button data-bs-toggle="modal" data-bs-target="#updateAddressCompanyModal"
+                                data-id="{{ item.id }}"
+                                data-continent="{{ item.continent }}"
+                                data-country="{{ item.country }}"
+                                data-city="{{ item.city }}"
+                                data-address="{{ item.address }}"
+                                data-postal="{{ item.postal }}"
+                            ><i class="fa fa-edit"></i></button>
+                            <button
+                                class="statusForm"
+                                data-id="{{item.id}}"
+                                data-message="Cette adresse sera défini comme le siège central!"
+                                data-type="warning"
+                                data-url="{% url 'dashboard:default-address-company'%}" 
+                                data-token="{{csrf_token}}"
+                            ><i class="fa fa-check checkiconitem"></i></button>
+                            <button
+                                class="deleteSubmit"
+                                data-id="{{item.id}}"
+                                data-message="Cette adresse sera supprimer!"
+                                data-type="warning"
+                                data-url="{% url 'dashboard:delete-address-company'%}" 
+                                data-token="{{csrf_token}}"
+                            ><i class="fa fa-trash deleteiconitem"></i></button>
+                        </div>
+                    </div>
+                    <hr class="ligneitemvalue" />
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>   
+    
+    <!-- modale mise a jour --> 
+    <div id="updateInfoModal" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h5 class="modal-title" id="exampleModalLabel">Information de l'entreprise</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form class="updateSubmit" lpformnum="1"  method="post" enctype="multipart/form-data" onsubmit="postSubmissionUpdateCompanyInfo(this)" action="{% url 'dashboard:update-info-company'%}">
+                    <div class="modal-body">
+                        {% csrf_token %} 
+                        <input type="hidden" id="blogid" name="id">
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p style="color: #888">Nom</p>
+                                <div class="form-group label-floating" style="width: 100%;">
+                                    <input class="form-control" value="{{ company.name }}"  name="name" placeholder="Nom" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p style="color: #888">Vision de l'entreprise</p>
+                                <div class="form-group label-floating">
+                                    <div class="editorvision" style="height:20vh">
+                                    </div>
+                                    <input class="form-control post-content-vision" name="vision" type="hidden"/>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p style="color: #888">Mission de l'entreprise</p>
+                                <div class="form-group label-floating">
+                                    <div class="editormission" style="height:20vh">
+                                    </div>
+                                    <input class="form-control post-content-mission" name="mission" type="hidden"/>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12" >
+                                <p>Logo de l'entreprise</p>
+                                <div class="gallerycoverupdate">
+                                    <img src="{{ company.logo.url }}" />
+                                </div>
+                                <div class="form-group label-floating" style="width: 100%;" >
+                                    <input type="file" class="form-control " accept="image/*,.png,.jpg" name="logo" />
+                                </div>
+                            </div>
+                        </div><br>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-bs-dismiss="modal" aria-label="Close" class="btn btn-bg-secondary">Annuler</button>
+                        <button type="submit" class="btn btn-primary newBtn updatebtn">Sauvegarder</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+    <!-- end popup -->
+
+    <!-- modale des valeurs -->
+    <div id="valueCompanyModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h5 class="modal-title" id="exampleModalLabel">Ajouter une valeur</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form class="createSubmit" lpformnum="1"  method="post" enctype="multipart/form-data" action="{% url 'dashboard:create-value-company'%}">
+                    <div class="modal-body">
+                        {% csrf_token %} 
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p style="color: #888">Libellé</p>
+                                <div class="form-group label-floating" style="width: 100%;">
+                                    <input class="form-control" name="label" placeholder="Libelle" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p style="color: #888">Valeur</p>
+                                <div class="form-group label-floating" style="width: 100%;">
+                                    <textarea rows="4" cols="50" class="form-control" name="value"></textarea>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button data-bs-dismiss="modal" aria-label="Close" class="btn btn-bg-secondary">Annuler</button>
+                        <button type="submit" class="btn btn-primary newBtn createbtn">Sauvegarder</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+    <!-- end popup -->
+
+    <!-- modale contacts -->
+    <div id="contactCompanyModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logo.png' %}" alt="Logo" class="logomodal">
+                    <h5 class="modal-title" id="exampleModalLabel">Ajouter un contact</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form class="createSubmit" lpformnum="1"  method="post" enctype="multipart/form-data" action="{% url 'dashboard:create-contact-company'%}">
+                    <div class="modal-body">
+                        {% csrf_token %} 
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p style="color: #888">Numéro de téléphone</p>
+                                <div class="form-group label-floating" style="width: 100%;">
+                                    <input class="form-control" name="phone" placeholder="Téléphone" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button data-bs-dismiss="modal" aria-label="Close" class="btn btn-bg-secondary">Annuler</button>
+                        <button type="submit" class="btn btn-primary newBtn createbtn">Sauvegarder</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+    <!-- end popup -->
+
+    <!-- modale email -->
+    <div id="emailCompanyModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logo.png' %}" alt="Logo" class="logomodal">
+                    <h5 class="modal-title" id="exampleModalLabel">Ajouter un email</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form class="createSubmit" lpformnum="1"  method="post" enctype="multipart/form-data" action="{% url 'dashboard:create-email-company'%}">
+                    <div class="modal-body">
+                        {% csrf_token %} 
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p style="color: #888">Email</p>
+                                <div class="form-group label-floating" style="width: 100%;">
+                                    <input class="form-control" name="email" placeholder="Email" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button data-bs-dismiss="modal" aria-label="Close" class="btn btn-bg-secondary">Annuler</button>
+                        <button type="submit" class="btn btn-primary newBtn createbtn">Sauvegarder</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+    <!-- end popup -->
+
+    <!-- modale social network -->
+    <div id="socialCompanyModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logo.png' %}" alt="Logo" class="logomodal">
+                    <h5 class="modal-title" id="exampleModalLabel">Ajouter un Réseau</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form class="createSubmit" lpformnum="1"  method="post" enctype="multipart/form-data" action="{% url 'dashboard:create-social-company'%}">
+                    <div class="modal-body">
+                        {% csrf_token %} 
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p style="color: #888">Nom du réseau</p>
+                                <div class="form-group label-floating" style="width: 100%;">
+                                    <input class="form-control" name="name" placeholder="Nom du réseau" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p style="color: #888">Lien du réseau</p>
+                                <div class="form-group label-floating" style="width: 100%;">
+                                    <input class="form-control" name="link" placeholder="https://facebook.com/profil" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p style="color: #888">Logo</p>
+                                <div class="form-group label-floating" style="width: 100%;">
+                                    <input class="form-control" name="logo" type="file" accept="image/*" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button data-bs-dismiss="modal" aria-label="Close" class="btn btn-bg-secondary">Annuler</button>
+                        <button type="submit" class="btn btn-primary newBtn createbtn">Sauvegarder</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+    <!-- end popup -->
+
+    <!-- modale address -->
+    <div id="createAddressCompanyModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logo.png' %}" alt="Logo" class="logomodal">
+                    <h5 class="modal-title" id="exampleModalLabel">Ajouter une adresse</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form class="createSubmit" lpformnum="1"  method="post" enctype="multipart/form-data" action="{% url 'dashboard:create-address-company'%}">
+                    <div class="modal-body">
+                        {% csrf_token %} 
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p style="color: #888">Continent</p>
+                                <div class="form-group label-floating" style="width: 100%;">
+                                    <input class="form-control" name="continent" placeholder="Continent" required />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p style="color: #888">Pays</p>
+                                <div class="form-group label-floating" style="width: 100%;">
+                                    <input class="form-control" name="country" placeholder="Pays" required />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p style="color: #888">Ville</p>
+                                <div class="form-group label-floating" style="width: 100%;">
+                                    <input class="form-control" name="city" placeholder="Ville" required />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p style="color: #888">Adresse</p>
+                                <div class="form-group label-floating" style="width: 100%;">
+                                    <input class="form-control" name="address" placeholder="Adresse, Rue" required />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p style="color: #888">Adresse Postal</p>
+                                <div class="form-group label-floating" style="width: 100%;">
+                                    <input class="form-control" name="postal" placeholder="Postal" required />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button data-bs-dismiss="modal" aria-label="Close" class="btn btn-bg-secondary">Annuler</button>
+                        <button type="submit" class="btn btn-primary newBtn createbtn">Sauvegarder</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+    <!-- end popup -->
+
+    <!-- modale Modifier l'adresse -->
+    <div id="updateAddressCompanyModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logo.png' %}" alt="Logo" class="logomodal">
+                    <h5 class="modal-title" id="exampleModalLabel">Modifier cette adresse</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form class="createSubmit" lpformnum="1"  method="post" enctype="multipart/form-data" action="{% url 'dashboard:update-address-company'%}">
+                    <div class="modal-body">
+                        {% csrf_token %} 
+                        <input type="hidden" id="companyaddressid" name="id">
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p style="color: #888">Continent</p>
+                                <div class="form-group label-floating" style="width: 100%;">
+                                    <input class="form-control" name="continent" placeholder="Continent" id="companyaddresscontinent" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p style="color: #888">Pays</p>
+                                <div class="form-group label-floating" style="width: 100%;">
+                                    <input class="form-control" name="country" placeholder="Pays" id="companyaddresscountry" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p style="color: #888">Ville</p>
+                                <div class="form-group label-floating" style="width: 100%;">
+                                    <input class="form-control" name="city" placeholder="Ville" id="companyaddresscity" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p style="color: #888">Adresse</p>
+                                <div class="form-group label-floating" style="width: 100%;">
+                                    <input class="form-control" name="address" placeholder="Adresse, Rue" id="companyaddressaddress" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p style="color: #888">Adresse Postal</p>
+                                <div class="form-group label-floating" style="width: 100%;">
+                                    <input class="form-control" name="postal" placeholder="Postal" id="companyaddresspostal" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button data-bs-dismiss="modal" aria-label="Close" class="btn btn-bg-secondary">Annuler</button>
+                        <button type="submit" class="btn btn-primary newBtn createbtn">Sauvegarder</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+    <!-- end popup -->
+</div>
+{% endblock %}  

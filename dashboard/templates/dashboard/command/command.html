@@ -1,0 +1,182 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static thumbnail i18n widget_tweaks countries currency_converter_tags %}
+{% block content  %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row g-4 mb-4">
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Toutes les Commandes</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">{{numberallcommand}}</h4>
+                </div>
+                <small>Total</small>
+                </div>
+                <span class="badge bg-label-primary rounded p-2">
+                <i class="bx bx-map bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card">
+                <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div class="content-left">
+                    <span>Commandes Payées</span>
+                    <div class="d-flex align-items-end mt-2">
+                        <h4 class="mb-0 me-2">{{numberbuycommand}}</h4>
+                    </div>
+                    <small>Total</small>
+                    </div>
+                    <span class="badge bg-label-success rounded p-2">
+                    <i class="bx bx-map bx-sm"></i>
+                    </span>
+                </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Commandes Supprimées</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">{{numberdeletecommand}}</h4>
+                </div>
+                <small>Total </small>
+                </div>
+                <span class="badge bg-label-danger rounded p-2">
+                <i class="bx bx-map bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Commandes Rejettées</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">{{numberrejectedcommand}}</h4>
+                </div>
+                <small>Total</small>
+                </div>
+                <span class="badge bg-label-warning rounded p-2">
+                <i class="bx bx-map bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Command List Table -->
+    <div class="card">
+        <div class="card-header border-bottom row">
+            <h5 class="card-title col-lg-8">Listes des Commandes</h5>
+            <div class="col-lg-4 searchpage">
+                <input class="form-control" id="searchcommand" type="text" placeholder="Recherche..">
+            </div>
+        </div> 
+        
+        <!-- Main content -->
+        <div class="card-body">
+            <table id="filtercommand" class="table shadow-card">
+                <thead>
+                    <tr>
+                        <th>Commande</th>
+                        <th>Articles</th>
+                        <th>Achéteur</th>
+                        <th>Prix Total</th>
+                        <th>Date et heure de la commande</th>
+                        <th>Status Paiement</th>
+                        <th>Status Livraison</th>
+                        <th>Plus ></th>
+                    </tr>
+                </thead>    
+                <tbody>
+                    {% if allcommand %}
+                        {% for item in allcommand %}
+                            <tr>
+                                <td><div class="activelistitem">FRIP-CMD{{item.id}}</div></td>
+                                <td>
+                                    <u>Liste des articles</u><br>
+                                    {% for product in item.products %}
+                                        - Article : {{product.name}} <br>
+                                        - Auteur  : {{ product.seller }} <hr>
+                                    {% endfor %}
+                                </td>
+                                <td>{{item.customer}} </td>
+                                <td>
+                                    <div class="activelistitem">
+                                        {% price_exchange currency.devise_destination currency.exchange_rate item.total %}
+                                    </div>
+                                </td>
+                                <td>{{item.created_date}}</td>
+                                <td>
+                                    {% if item.command_is_pay %}
+                                        <div class="activelistitem">Paiement Réussi</div>
+                                    {% else %}
+                                        <div class="activelistitem">En attente de paiement</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.delivery_start and item.delivered_end %}
+                                        <div class="activelistitem">Livraison Effectué</div>
+                                    {% elif item.delivery_start and not item.delivered_end  %}
+                                        <div class="activelistitem">Livraison En cours</div>
+                                    {% else %}
+                                        <div class="activelistitem">Livraison En attente</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="dropdown optionblock">
+                                        <button class="btn dropdown-toggle-split" data-bs-toggle="dropdown">
+                                            <i class="fa fa-bars"></i>
+                                        </button>
+                                        <div class="dropdown-menu"> 
+                                            <a class="dropdown-item dropitem validationForm" href="JavaScript:void()" 
+                                                data-url="{% url 'dashboard:update-status-command-payment' %}" 
+                                                data-id="{{item.id}}"
+                                                data-token="{{csrf_token}}"
+                                                data-message="{% if item.command_is_pay %}Cette commande sera désormais considéréę comme non validée!{% else %}Cette commande sera désormais considérée comme validée!{% endif %}"
+                                                data-type="warning">
+                                            <i class="fas fa-ban"></i> {% if item.command_is_pay %}Annulez le paiement{% else %}Validez le paiement{% endif %}</a> 
+
+                                            <!-- <a class="dropdown-item dropitem" href="JavaScript:void()"
+                                                data-url="" 
+                                                data-id="{{item.id}}"
+                                                data-token="{{csrf_token}}">
+                                            <i class="fas fa-car"></i> Changez le point de livraison</a>  -->
+
+                                            <a class="dropdown-item dropitem " href="Javascript:void()"
+                                                data-id="{{item.id}}"
+                                            >
+                                            <i class="fas fa-eye"></i> Visualisez</a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr >
+                            <td colspan="12" class="text-primary text-center" >
+                                <p class="emptylist">Aucune commande</p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        <!-- /.content --> 
+
+    </div>
+</div>
+{% endblock content  %}

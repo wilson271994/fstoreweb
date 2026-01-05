@@ -1,0 +1,152 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static thumbnail i18n widget_tweaks countries %}
+{% block content  %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row g-4 mb-4">
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Montant Global</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">{{globalamount}} FCFA</h4>
+                </div>
+                <small>Total</small>
+                </div> 
+                <span class="badge bg-label-primary rounded p-2">
+                <i class="bx bx-money bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Payement Efféctué</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">{{paymentcomplete}} FCFA</h4>
+                </div>
+                <small>Total </small>
+                </div>
+                <span class="badge bg-label-danger rounded p-2">
+                <i class="bx bx-money bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Payement en Annuler</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">{{paymentcancel}} FCFA</h4>
+                </div>
+                <small>Total</small>
+                </div>
+                <span class="badge bg-label-success rounded p-2">
+                <i class="bx bx-money bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Comming Soon</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">0 FCFA</h4>
+                </div>
+                <small>Total</small>
+                </div>
+                <span class="badge bg-label-warning rounded p-2">
+                <i class="bx bx-money bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- financeproduct List Table -->
+    <div class="card">
+        <div class="card-header border-bottom row">
+            <h5 class="card-title col-lg-8">Listes des transactions des produits</h5>
+            <div class="col-lg-4 searchpage">
+                <input class="form-control" id="searchfinanceproduct" type="text" placeholder="Recherche..">
+            </div>
+        </div> 
+        
+        <!-- Main content -->
+        <div class="card-body">
+        <table id="filterfinanceproduct" class="table shadow-card">
+            <thead>
+                <tr>
+                    <th>Produits</th>
+                    <th>Clients</th>
+                    <th>Date de l'opération</th>
+                    <th>Montants</th>
+                    <th>Status</th>
+                    <th>Plus ></th>
+                </tr>
+            </thead>    
+            <tbody>
+                {% if allfinanceproduct %}
+                    {% for financeproduct in allfinanceproduct %}
+                        <tr> 
+                            <td>{{financeproduct.product}} </td>
+                            <td>{{financeproduct.customer}} </td>
+                            <td>{{financeproduct.transaction_date}} </td>
+                            <td>{{financeproduct.transaction_price}} FCFA </td>
+                            <td>
+                                {% if financeproduct.customer_has_pay %}
+                                    <div class="activelistitem">Payement Effectué</div>
+                                {% else %}
+                                    <div class="activelistitem">Payement Annuler</div>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <div class="dropdown optionblock">
+                                    <button class="btn dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"><p>Options</p></button>
+                                    <div class="dropdown-menu"> 
+                                        <a class="dropdown-item dropitem" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:finance-product-status'%}" 
+                                            data-id="{{financeproduct.id}}"
+                                            data-token="{{csrf_token}}" 
+                                            onclick="financeproductStatus(this)">
+                                        <i class="fas fa-ban"></i> Modifier le status</a> 
+
+                                        <a class="dropdown-item dropitem " href="Javascript:void()"
+                                            data-id="{{financeproduct.id}}"
+                                        >
+                                        <i class="fas fa-edit"></i> Visualiser</a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr >
+                        <td colspan="12" class="text-primary text-center" >
+                            <p class="emptylist">Aucune transaction pour l'instant!</p>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        </div>
+        <!-- /.content --> 
+
+    </div>
+</div>
+{% endblock content  %}

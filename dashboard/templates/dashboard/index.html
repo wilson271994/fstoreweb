@@ -1,0 +1,280 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static %}
+{% block content  %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row">
+      <!-- Website Analytics-->
+      <div class="col-lg-6 col-md-12 mb-4">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Trafic sur le site</h5>
+            <div class="dropdown">
+              <button class="btn p-0" type="button" id="analyticsOptions" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="bx bx-dots-vertical-rounded"></i>
+              </button>
+              <div class="dropdown-menu dropdown-menu-end" aria-labelledby="analyticsOptions">
+                <a class="dropdown-item" href="javascript:void(0);">Voir plus</a>
+                <a class="dropdown-item" href="javascript:void(0);">Rafraichir</a>
+                <a class="dropdown-item" href="javascript:void(0);">Partager</a> 
+              </div>
+            </div>
+          </div>
+          <div class="card-body pb-2">
+            <div class="d-flex justify-content-around align-items-center flex-wrap mb-4">
+              <div class="user-analytics text-center me-2">
+                <i class="bx bx-user me-1"></i>
+                <span>Utilisateurs</span>
+                <div class="d-flex align-items-center mt-2">
+                  <div class="chart-report" data-color="success" data-series="0"></div>
+                  <h3 class="mb-0">{{allclient}}</h3>
+                </div>
+              </div>
+              <div class="sessions-analytics text-center me-2">
+                <i class="bx bx-pie-chart-alt me-1"></i>
+                <span>Sessions active</span>
+                <div class="d-flex align-items-center mt-2">
+                  <div class="chart-report" data-color="warning" data-series="0"></div>
+                  <h3 class="mb-0">{{ activesessions }}</h3>
+                </div>
+              </div>
+              <div class="bounce-rate-analytics text-center">
+                <i class="bx bx-trending-up me-1"></i>
+                <span>Taux de Trafic</span>
+                <div class="d-flex align-items-center mt-2">
+                  <div class="chart-report" data-color="danger" data-series="0"></div>
+                  <h3 class="mb-0">0%</h3>
+                </div>
+              </div>
+            </div>
+            <div id="analyticsBarChart"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Referral, conversion, impression & income charts -->
+      <div class="col-lg-6 col-md-12">
+        <div class="row">
+          <!-- Referral Chart-->
+          <div class="col-sm-6 col-12 mb-4">
+            <div class="card">
+              <div class="card-body text-center">
+                <h2 class="mb-1">{{ globaltrafic }} FCFA</h2>
+                <span class="text-muted">Trafic Global</span>
+                <div id="referralLineChart"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Growth Chart-->
+          <div class="col-sm-6 col-12">
+            <div class="row">
+              <div class="col-12 mb-4">
+                <div class="card">
+                  <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                      <div class="d-flex align-items-center gap-3">
+                        <div class="avatar">
+                          <span class="avatar-initial bg-label-primary rounded-circle"><i class="bx bx-user fs-4"></i></span>
+                        </div>
+                        <div class="card-info">
+                          <h5 class="card-title mb-0 me-2">0 FCFA</h5>
+                          <small class="text-muted">Trafic</small>
+                        </div>
+                      </div>
+                      <div id="conversationChart"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 mb-4">
+                <div class="card">
+                  <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                      <div class="d-flex align-items-center gap-3">
+                        <div class="avatar">
+                          <span class="avatar-initial bg-label-warning rounded-circle"><i class="bx bx-dollar fs-4"></i></span>
+                        </div>
+                        <div class="card-info">
+                          <h5 class="card-title mb-0 me-2">0 FCFA</h5>
+                          <small class="text-muted">Revenue</small>
+                        </div>
+                      </div>
+                      <div id="incomeChart"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--/ Referral, conversion, impression & income charts -->
+
+      <!-- Activity -->
+      <div class="col-md-6 col-lg-6 col-xl-6 col-xxl-3 mb-4">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">Activités</h5>
+          </div>
+          <div class="card-body">
+            <ul class="p-0 m-0">
+              <li class="d-flex mb-4 pb-2">
+                <div class="avatar avatar-sm flex-shrink-0 me-3">
+                  <span class="avatar-initial rounded-circle bg-label-primary"><i class='bx bx-basket'></i></span>
+                </div>
+                <div class="d-flex flex-column w-100">
+                  <div class="d-flex justify-content-between mb-1">
+                    <span>Total des ventes</span>
+                    <span class="text-muted">{{ totalsell }}</span>
+                  </div>
+                  <div class="progress" style="height:6px;">
+                    <div class="progress-bar bg-primary" style="width: 0%" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                </div>
+              </li>
+              <li class="d-flex mb-4 pb-2">
+                <div class="avatar avatar-sm flex-shrink-0 me-3">
+                  <span class="avatar-initial rounded-circle bg-label-success"><i class='bx bx-car'></i></span>
+                </div>
+                <div class="d-flex flex-column w-100">
+                  <div class="d-flex justify-content-between mb-1">
+                    <span>Livraisons en attentes</span>
+                    <span class="text-muted">{{ pendingdelivered }}</span>
+                  </div>
+                  <div class="progress" style="height:6px;">
+                    <div class="progress-bar bg-success" style="width: 0%" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                </div>
+              </li>
+              <li class="d-flex mb-4 pb-2">
+                <div class="avatar avatar-sm flex-shrink-0 me-3">
+                  <span class="avatar-initial rounded-circle bg-label-warning"><i class='bx bx-car'></i></span>
+                </div>
+                <div class="d-flex flex-column w-100">
+                  <div class="d-flex justify-content-between mb-1">
+                    <span>Livraisons Effectués</span>
+                    <span class="text-muted">{{ completedelivered }}</span>
+                  </div>
+                  <div class="progress" style="height:6px;">
+                    <div class="progress-bar bg-warning" style="width: 0%" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                </div>
+              </li>
+              <li class="d-flex mb-2">
+                <div class="avatar avatar-sm flex-shrink-0 me-3">
+                  <span class="avatar-initial rounded-circle bg-label-danger"><i class='fa fa-balance-scale'></i></span>
+                </div>
+                <div class="d-flex flex-column w-100">
+                  <div class="d-flex justify-content-between mb-1">
+                    <span>Litiges En attentes</span>
+                    <span class="text-muted">{{ pendingcomplaints }}</span>
+                  </div>
+                  <div class="progress" style="height:6px;">
+                    <div class="progress-bar bg-danger" style="width: 0%" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <!--/ Activity -->
+
+      <!-- Profit Report & Registration -->
+      <div class="col-md-6 col-lg-6 col-xl-6 col-xxl-3">
+        <div class="row">
+          <div class="col-12 col-sm-6 col-md-12 mb-4">
+            <div class="card">
+              <div class="card-header pb-2">
+                <h5 class="card-title mb-0">Utilisateurs en ligne</h5>
+              </div>
+              <div class="card-body pb-2">
+                <div class="d-flex justify-content-between align-items-end gap-3">
+                  <div class="mb-3">
+                    <div class="d-flex align-content-center">
+                      <h5 class="mb-1">{{ activesessions }}</h5>
+                      <i class="bx bx-chevron-up text-success"></i>
+                    </div>
+                    <small class="text-success">0%</small>
+                  </div>
+                  <div id="registrationsBarChart"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--/ Profit Report & Registration -->
+
+      <!-- Sales -->
+      <div class="col-md-6 col-lg-6 col-xl-6 col-xxl-3 mb-4">
+        <div class="card">
+          <div class="card-header d-flex align-items-start justify-content-between">
+            <div class="card-title mb-0">
+              <h5 class="m-0 me-2">Ventes / 7</h5>
+              <small class="card-subtitle text-muted">Calculer les 7 derniers jours</small>
+            </div>
+            <div class="dropdown">
+              <button class="btn p-0" type="button" id="salesReport" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="bx bx-dots-vertical-rounded"></i>
+              </button>
+              <div class="dropdown-menu dropdown-menu-end" aria-labelledby="salesReport">
+                <a class="dropdown-item" href="javascript:void(0);">Voir plus</a>
+                <a class="dropdown-item" href="javascript:void(0);">Rafraichir</a>
+                <a class="dropdown-item" href="javascript:void(0);">Partager</a>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="salesChart"></div>
+            <ul class="p-0 m-0">
+              <li class="d-flex mb-3">
+                <span class="text-primary me-2"><i class='bx bx-up-arrow-alt bx-sm'></i></span>
+                <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                  <div class="me-2">
+                    <h6 class="mb-0 lh-1">Meilleur vente</h6>
+                    <small class="text-muted">Samedi</small>
+                  </div>
+                  <div class="item-progress">0</div>
+                </div>
+              </li>
+              <li class="d-flex">
+                <span class="text-secondary me-2"><i class='bx bx-down-arrow-alt bx-sm'></i></span>
+                <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                  <div class="me-2">
+                    <h6 class="mb-0 lh-1">Basse Vente</h6>
+                    <small class="text-muted">Dimanche</small>
+                  </div>
+                  <div class="item-progress">0</div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <!--/ Sales -->
+
+      <!-- Growth Chart-->
+      <div class="col-md-6 col-lg-6 col-xl-6 col-xxl-3 mb-4">
+        <div class="card">
+          <div class="card-body text-center">
+            <div class="dropdown mb-4">
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButtonSec" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                2020
+              </button>
+              <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButtonSec">
+                <a class="dropdown-item" href="javascript:void(0);">2022</a>
+                <a class="dropdown-item" href="javascript:void(0);">2021</a>
+                <a class="dropdown-item" href="javascript:void(0);">2020</a>
+              </div>
+            </div>
+            <div id="growthRadialChart"></div>
+            <h6 class="mb-0 mt-5"> 0% de croissance en 2022</h6>
+          </div>
+        </div>
+      </div>
+      <!-- Growth Chart-->
+      
+    </div>
+</div>
+{% endblock content  %}

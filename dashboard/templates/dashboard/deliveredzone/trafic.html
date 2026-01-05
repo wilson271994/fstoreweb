@@ -1,0 +1,188 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static thumbnail i18n widget_tweaks countries %}
+{% block content  %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row g-4 mb-4">
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Toutes les Livraisons</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">{{numberalltrafic}}</h4>
+                </div>
+                <small>Total</small>
+                </div>
+                <span class="badge bg-label-primary rounded p-2">
+                <i class="bx bx-map bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Livraison Initié</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">{{starttrafic}}</h4>
+                </div>
+                <small>Total </small>
+                </div>
+                <span class="badge bg-label-danger rounded p-2">
+                <i class="bx bx-map bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Livraison en cours</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">{{starttrafic}}</h4>
+                </div>
+                <small>Total</small>
+                </div>
+                <span class="badge bg-label-success rounded p-2">
+                <i class="bx bx-map bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Livraison éffectué</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">{{endtrafic}}</h4>
+                </div>
+                <small>Total</small>
+                </div>
+                <span class="badge bg-label-warning rounded p-2">
+                <i class="bx bx-map bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Trafic List Table -->
+    <div class="card">
+        <div class="card-header border-bottom row">
+            <h5 class="card-title col-lg-8">Listes des Livraisons</h5>
+            <div class="col-lg-4 searchpage">
+                <input class="form-control" id="searchtrafic" type="text" placeholder="Recherche..">
+            </div>
+        </div> 
+        
+        <!-- Main content -->
+        <div class="card-body">
+        <table id="filtertrafic" class="table shadow-card">
+            <thead>
+                <tr>
+                    <th>Articles</th>
+                    <th>Acheteurs</th>
+                    <th>Point de Livraison</th>
+                    <th>Dates et heures de début</th>
+                    <th>Dates et heures de fin</th>
+                    <th>Status Livraison</th>
+                    <th>Plus ></th>
+                </tr>
+            </thead>    
+            <tbody>
+                {% if alltrafic %}
+                    {% for trafic in alltrafic %}
+                        <tr>
+                            <td>
+                                <u>Liste des articles</u><br>
+                                {% for product in trafic.products %}
+                                    - Article : {{product.name}} <br>
+                                    - Auteur  : {{ product.seller }} <hr>
+                                {% endfor %}
+                            </td>
+                            <td>{{trafic.customer}} </td>
+                            <td>{{trafic.distributor}} </td>
+                            {% if trafic.is_delivery_start %}
+                                <td>{{trafic.delivery_start_datetime}}</td>
+                            {% else %}
+                                <td>En Attente</td>
+                            {% endif %}
+                            {% if trafic.is_delivery_end %}
+                                <td>{{trafic.delivery_end_datetime}}</td>
+                            {% else %}
+                                <td>En Attente</td>
+                            {% endif %}
+                            <td>
+                                {% if trafic.command_is_pay %}
+                                    {% if trafic.is_delivery_start and trafic.is_delivery_end %}
+                                        <div class="activelistitem">Livraison Effectué</div>
+                                    {% elif trafic.is_delivery_start and not trafic.is_delivery_end  %}
+                                        <div class="activelistitem">Livraison En cours</div>
+                                    {% else %}
+                                        <div class="activelistitem">Livraison En attente</div>
+                                    {% endif %}
+                                {% else %}
+                                    <div class="activelistitem">En attente de payement</div>
+                                {% endif %}
+                            </td> 
+
+                            <td>
+                                <div class="dropdown optionblock">
+                                    <button class="btn dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"><p>Options</p></button>
+                                    <div class="dropdown-menu"> 
+                                        {% if trafic.is_pay %}
+                                            {% if not trafic.is_delivery_start %}
+                                                <a class="dropdown-item dropitem validationForm" href="JavaScript:void()" 
+                                                    data-url="{% url 'dashboard:trafic-start'%}" 
+                                                    data-id="{{trafic.id}}"
+                                                    data-token="{{csrf_token}}"
+                                                    data-message="En effectuant cette action vous déclencherez le processus de livraison de cette commande!"
+                                                    data-type="warning">
+                                                <i class="fas fa-truck"></i> Débuter le Processus de Livraison</a> 
+                                            {% endif %}
+
+                                            {% if not trafic.is_delivery_end %}
+                                                <a class="dropdown-item dropitem validationForm" href="JavaScript:void()" 
+                                                    data-url="{% url 'dashboard:trafic-end'%}" 
+                                                    data-id="{{trafic.id}}"
+                                                    data-token="{{csrf_token}}"
+                                                    data-message="En effectuant cette action vous confirmez que le client à reçu sa commande et est satisfait!"
+                                                    data-type="warning">
+                                                <i class="fas fa-check-circle"></i> Validation de la livraison</a> 
+                                            {% endif %}
+                                        {% endif %}
+                                        <a class="dropdown-item dropitem " href="Javascript:void()"
+                                            data-id="{{trafic.id}}"
+                                        >
+                                        <i class="fas fa-edit"></i> Visualiser</a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr >
+                        <td colspan="12" class="text-primary text-center" >
+                            <p class="emptylist">Aucun Trafic pour l'instant!</p>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        </div>
+        <!-- /.content --> 
+
+    </div>
+</div>
+{% endblock content  %}

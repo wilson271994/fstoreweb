@@ -1,0 +1,90 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static thumbnail i18n widget_tweaks countries %}
+{% block content  %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="card hometitle">
+        <h5 class="card-title col-lg-4">Fstore Advertizings</h5>
+        <p>Gérer les Publicités et Sponsorings sur votre toute la plateforme.</p>
+    </div>
+    <div class="row g-4 mb-4">
+        <div class="col-sm-6 col-xl-4" onclick="Redirect(this)" data-url="{% url 'dashboard:banner-home'%}">
+            <div class="card btnattrinute">
+                <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div class="content-left">
+                        <span>Gestion de la bannière</span>
+                        <div class="d-flex align-items-end mt-2">
+                            <h4 class="mb-0 me-2">{{allbanner}}</h4>
+                        </div>
+                        <small>Total</small>
+                    </div>
+                    <span class="badge bg-label-primary rounded p-2">
+                    <i class="bx bx-speaker bx-sm"></i>
+                    </span>
+                </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-sm-6 col-xl-4" onclick="Redirect(this)" data-url="{% url 'dashboard:sponsoringzone-home'%}">
+            <div class="card btnattrinute">
+                <div class="card-body">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div class="content-left">
+                            <span>Gestion des Zones Publicitaires</span>
+                            <div class="d-flex align-items-end mt-2">
+                                <h4 class="mb-0 me-2">{{allsponsoringzone}}</h4>
+                            </div>
+                            <small>Total</small>
+                        </div>
+                        <span class="badge bg-label-secondary rounded p-2">
+                            <i class="bx bx-speaker bx-sm"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="col-sm-6 col-xl-4" onclick="Redirect(this)" data-url="{% url 'dashboard:sponsoringbooking-home'%}">
+            <div class="card btnattrinute">
+                <div class="card-body">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div class="content-left">
+                            <span>Gestion des Forfaits de Sponsoring</span>
+                            <div class="d-flex align-items-end mt-2">
+                                <h4 class="mb-0 me-2">{{allbooking}}</h4>
+                            </div>
+                            <small>Total</small>
+                        </div>
+                        <span class="badge bg-label-dark rounded p-2">
+                            <i class="bx bx-speaker bx-sm"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-4" onclick="Redirect(this)" data-url="{% url 'dashboard:sponsoring-home'%}">
+            <div class="card btnattrinute">
+                <div class="card-body">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div class="content-left">
+                            <span>Gestion des Sponsorings</span>
+                            <div class="d-flex align-items-end mt-2">
+                                <h4 class="mb-0 me-2">{{allpub}}</h4>
+                            </div>
+                            <small>Total</small>
+                        </div>
+                        <span class="badge bg-label-danger rounded p-2">
+                            <i class="bx bx-speaker bx-sm"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock content  %}

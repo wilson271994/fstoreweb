@@ -1,0 +1,319 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static thumbnail i18n widget_tweaks countries %}
+{% block content  %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row g-4 mb-4">
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Toutes les marques</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">{{brands}}</h4>
+                </div>
+                <small>Total</small>
+                </div>
+                <span class="badge bg-label-primary rounded p-2">
+                <i class="bx bx-flag bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Marques Inactives</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">{{inactivebrand}}</h4>
+                </div>
+                <small>Total </small>
+                </div>
+                <span class="badge bg-label-danger rounded p-2">
+                <i class="bx bx-flag bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Marques Actives</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">{{activebrand}}</h4>
+                </div>
+                <small>Total</small>
+                </div>
+                <span class="badge bg-label-success rounded p-2">
+                <i class="bx bx-flag bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Marques Favorites</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">0</h4>
+                </div>
+                <small>Total</small>
+                </div>
+                <span class="badge bg-label-warning rounded p-2">
+                <i class="bx bx-flag bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Brand List Table -->
+    <div class="card">
+        <div class="card-header border-bottom row">
+            <h5 class="card-title col-lg-7">Liste des Marques</h5>
+            <div class="col-lg-3 searchpage">
+                <input class="form-control" id="searchuser" type="text" placeholder="Recherche..">
+            </div>
+            <div class="plusbtn col-lg-2" id="addbrand"><i class="fa fa-plus-circle"></i></div>
+        </div> 
+        
+        <!-- Main content -->
+        <div class="card-body">
+        <table id="filterbrand" class="table shadow-card">
+            <thead>
+                <tr>
+                    <th>Logos</th>
+                    <th>Intitulés</th>
+                    <th>Catégories</th>
+                    <th>Créée par</th>
+                    <th>Validation</th>
+                    <th>Status</th>
+                    <th>Plus ></th>
+                </tr>
+            </thead>    
+            <tbody>
+                {% if allbrand %}
+                    {% for brand in allbrand %}
+                        <tr>
+                            <td>
+                                {% if brand.logo %}
+                                    <img src="{{ brand.logo.url }}" class='img-circle elevation-2 pp_user'/>
+                                {% else %}
+                                    <img src="{% static 'backend/img/avatars/avatar.png' %}" class='img-circle elevation-2 pp_user'/>
+                                {% endif %}
+                            </td>
+                            <td>{{brand.name}}</td>
+                            <td>
+                                {% for i in brand.categories %}
+                                    - {{  i.name }} <br>
+                                {% endfor %}
+                            </td>
+                            <td>{{brand.creator}}</td>
+                            <td>
+                                {% if brand.is_approved %}
+                                    <div class="activelistitem">Approuver</div>
+                                {% else %}
+                                    <div class="activelistitem">Non Approuver</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if brand.is_active %}
+                                    <div class="activelistitem">Actif</div>
+                                {% else %}
+                                    <div class="activelistitem">Inactif</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="dropdown optionblock">
+                                    <button class="btn dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"><p>Options</p></button>
+                                    <div class="dropdown-menu"> 
+                                        <a class="dropdown-item dropitem validationForm" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:validate-brand'%}" 
+                                            data-id="{{brand.id}}"
+                                            data-token="{{csrf_token}}"
+                                            data-message="{% if brand.is_approved %}Cette Marque ne sera plus visible par les achéteurs!{% else %}Cette Marque sera desormais visible par les achéteurs!{% endif %}"
+                                            data-type="warning">
+                                            <i class="fas fa-shield"></i> 
+                                            {% if brand.is_approved %}Deapprouver cette Marque{% else %}Approuver cette Marque{% endif %}
+                                        </a> 
+                                        
+                                        <a class="dropdown-item dropitem statusForm" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:status-brand'%}" 
+                                            data-id="{{brand.id}}"
+                                            data-token="{{csrf_token}}" 
+                                            data-message="{% if brand.is_active %}Cette Marque sera désormais Inactive!{% else %}Cette Marque sera désormais Active!{% endif %}"
+                                            data-type="warning"
+                                            >
+                                        <i class="fas fa-ban"></i> 
+                                            {% if brand.is_active %}Bloquer cette Marque{% else %}Activer cette Marque{% endif %}
+                                        </a> 
+
+                                        <a class="dropdown-item dropitem updateBrand" href="Javascript:void()"
+                                            data-id="{{brand.id}}"
+                                            data-name="{{brand.name}}" 
+                                            data-sellerid="{{brand.seller_id}}"
+                                            data-seller="{{brand.seller}}"
+                                        >
+                                        <i class="fas fa-edit"></i> Modifier</a>
+
+                                        <a class="dropdown-item dropitem deleteSubmit" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:delete-brand'%}" 
+                                            data-id="{{brand.id}}"
+                                            data-message="La suppression de cette Marque sera définitive."
+                                            data-type="warning"
+                                            data-token="{{csrf_token}}">
+                                            <i class="fas fa-trash"></i> Supprimer</a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr >
+                        <td colspan="7" class="text-primary text-center" >
+                            <p class="emptylist">Aucune Marque n'a été enregistré!</p>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        </div>
+        <!-- /.content --> 
+
+    </div>
+
+    <!--Modal de creation des marques -->
+    <div class="modal fade"  id="brandCreation" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Nouvelle Marque</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="createSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:create-brand' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='creator' value="{{request.user.id}}" />
+                    <div class="modal-body">
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Intitulé de la marque' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="name" required placeholder="Marque... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Choisir la ou les Catégorie(s)' %}</p>
+                                <div class="form-group label-floating">
+                                    <select name="categories" required multiple class="form-control selectpicker"
+                                    data-selected-text-format="count > 3"
+                                    data-live-search="true">
+                                        {% for item in parentcategory %}
+                                            <option value="{{item.id}}">{{item.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Logo de la marque' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type="file"  name="logo" required  />
+                                </div>
+                            </div>
+                        </div><hr>
+                        
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeaddmarque">{% trans 'Annuler' %}</button>
+                        <button type="submit" id="buttomcreate" class="btn newBtn createbtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal de mise à jour des marques -->
+    <div class="modal fade"  id="brandUpdate" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Mise à jour de la Marque</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="createSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:update-brand' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='id' id="brandid" />
+                    <div class="modal-body">
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Intitulé de la marque' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" id="brandnameid"  name="name" placeholder="Marque... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Choisir la ou les Catégorie(s)' %}</p>
+                                <div class="form-group label-floating">
+                                    <select name="categories" multiple class="form-control selectpicker"
+                                    data-selected-text-format="count > 3"
+                                    data-live-search="true">
+                                        {% for item in parentcategory %}
+                                            <option value="{{item.id}}">{{item.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Logo de la marque' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type="file"  name="logo"  />
+                                </div>
+                            </div>
+                        </div><hr>
+                        
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeupdatebrand">{% trans 'Annuler' %}</button>
+                        <button type="submit" class="btn newBtn updatebtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock content  %}

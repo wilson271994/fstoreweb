@@ -1,0 +1,225 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static thumbnail i18n widget_tweaks countries %}
+{% block content  %}
+<div class="container-xxl flex-grow-1 container-p-y">
+
+    <!-- devises List Table -->
+    <div class="card">
+        <div class="card-header border-bottom row">
+            <h5 class="card-title col-lg-4">Listes des Monnaies</h5>
+            <div class="col-lg-4 searchpage">
+                <input class="form-control" id="searchdevise" type="text" placeholder="Recherche..">
+            </div>
+            <div class="plusbtn col-lg-3"><i class="fa fa-rotate" id="updatedevise" 
+                data-url="{% url 'dashboard:currency-update' %}"
+                data-token="{{csrf_token}}"></i></div>
+            <div class="plusbtn col-lg-1"><i class="fa fa-plus-circle" id="adddevise"></i></div>
+        </div> 
+
+        <!-- Main content -->
+        <div class="card-body">
+        <table id="filterdevise" class="table shadow-card">
+            <thead>
+                <tr>
+                    <th>Monnaies Origine</th>
+                    <th>Taux d'échange</th>
+                    <th>Monnaies Destination</th>
+                    <th>Créer par</th>
+                    <th>Status</th>
+                    <th>Plus ></th>
+                </tr>
+            </thead>    
+            <tbody>
+                {% if alldevise %}
+                    {% for devise in alldevise %}
+                        <tr>
+                            <td>{{devise.devise_origin}}</td>
+                            <td>{{devise.exchange_rate}}</td>
+                            <td>{{devise.devise_destination}}</td>
+                            <td>{{devise.author}}</td>
+                            <td>
+                                {% if devise.is_default == True %}
+                                    <div class="activelistitem">Principal</div>
+                                {% else %}
+                                    <div class="activelistitem">Secondaire</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if devise.is_active == True %}
+                                    <div class="activelistitem">Actif</div>
+                                {% else %}
+                                    <div class="activelistitem">Inactif</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="dropdown optionblock">
+                                    <button class="btn dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"><p>Options</p></button>
+                                    <div class="dropdown-menu"> 
+                                        <a class="dropdown-item dropitem validatedevise" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:devise-active'%}" 
+                                            data-id="{{devise.id}}"
+                                            data-token="{{csrf_token}}" 
+                                            onclick="deviseActive(this)">
+                                        <i class="fas fa-check"></i> Principal/Secondaire</a> 
+
+                                        <a class="dropdown-item dropitem statusForm" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:currency-status'%}" 
+                                            data-id="{{devise.id}}"
+                                            data-token="{{csrf_token}}" 
+                                            data-message="{% if devise.is_active %}Cette Monnaie sera desormais Inactive!{% else %}Cette Monnaie sera desormais Active!{% endif %}"
+                                            data-type="warning"
+                                            >
+                                            <i class="fas fa-ban"></i> 
+                                            {% if sponsoringbooking.is_active %}Bloquer cette Monnaie{% else %}Activer cette Monnaie{% endif %}
+                                        </a> 
+
+                                        <a class="dropdown-item dropitem updatedevise" href="Javascript:void()"
+                                            data-id="{{devise.id}}"
+                                            data-deviseorigin="{{devise.devise_origin}}" 
+                                            data-exchangerate="{{devise.exchange_rate}}" 
+                                            data-devisedestination="{{devise.devise_destination}}" 
+                                        >
+                                        <i class="fas fa-edit"></i> Modifier</a>
+
+                                        <a class="dropdown-item dropitem deleteSubmit" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:currency-delete'%}" 
+                                            data-id="{{devise.id}}"
+                                            data-type="warning"
+                                            data-message="Attention cette opération est ireversible, cliquez sur oui pour continuer."
+                                            data-token="{{csrf_token}}">
+                                            <i class="fas fa-trash"></i> Supprimer</a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr >
+                        <td colspan="7" class="text-primary text-center" >
+                            <p class="emptylist">Aucune Monnaies n'a été enregistré!</p>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        </div>
+        <!-- /.content --> 
+
+    </div>
+
+    <!--Modal de creation des devises -->
+    <div class="modal fade"  id="deviseCreation" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 clastype="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"s="modal-title">Nouvelle Monnaie</h4>
+                    <button ></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="createSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:currency-creation' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='creator' value="{{request.user.id}}" />
+                    <div class="modal-body">
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Monnaie d\'Origine' %}</p>
+                                <div class="form-group label-floating">
+                                    {% render_field form.devise_origin class="form-control" %}
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Monnaie de Destination' %}</p>
+                                <div class="form-group label-floating">
+                                    {% render_field form.devise_destination class="form-control" %}
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Taux Echange' %}</p>
+                                <div class="form-group label-floating">
+                                    {% render_field form.exchange_rate class="form-control" %}
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeadddevise">{% trans 'Annuler' %}</button>
+                        <button type="submit" id="buttomcreate" class="btn newBtn createbtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal de mise à jour des devises -->
+    <div class="modal fade"  id="deviseUpdate" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Mise à jour de la Monnaie</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="updateSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:currency-update' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='id' id="deviseid" />
+                    <div class="modal-body">
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Monnaie d\'Origine' %}</p>
+                                <div class="form-group label-floating">
+                                    {% render_field form_update.devise_origin id="deviseoriginid" class="form-control" %}
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Monnaie de Destination' %}</p>
+                                <div class="form-group label-floating">
+                                    {% render_field form_update.devise_destination id="devisedestinationid" class="form-control" %}
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Taux Echange' %}</p>
+                                <div class="form-group label-floating">
+                                    {% render_field form_update.exchange_rate id="deviseexchangerateid" class="form-control" %}
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeupdatedevise">{% trans 'Annuler' %}</button>
+                        <button type="submit" class="btn newBtn updatebtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock content  %}

@@ -1,0 +1,185 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static thumbnail i18n widget_tweaks countries %}
+{% block content  %}
+<div class="container-xxl flex-grow-1 container-p-y">
+
+    <!-- sponsoringzones List Table -->
+    <div class="card">
+        <div class="card-header border-bottom row">
+            <a class="homebtn col-lg-1" href="{% url 'dashboard:advertizing-home'%}">
+                <i class="fa fa-chevron-circle-left"></i>
+            </a>
+            <h5 class="card-title col-lg-6">Liste des Zones</h5>
+            <div class="col-lg-3 searchpage">
+                <input class="form-control" id="searchsponsoringzone" type="text" placeholder="Recherche..">
+            </div>
+            <div class="plusbtn col-lg-2" id="addsponsoringzone"><i class="fa fa-plus-circle"></i></div>
+        </div> 
+        
+        <!-- Main content -->
+        <div class="card-body">
+        <table id="filtersponsoringzone" class="table shadow-card">
+            <thead>
+                <tr>
+                    <th>Intitulés</th>
+                    <th>Code Zone</th>
+                    <th>Status</th>
+                    <th>Plus ></th>
+                </tr>
+            </thead>    
+            <tbody>
+                {% if allsponsoringzone %}
+                    {% for sponsoringzone in allsponsoringzone %}
+                        <tr>
+                            <td>{{sponsoringzone.name}}</td>
+                            <td>{{sponsoringzone.code}}</td>
+                            <td>
+                                {% if sponsoringzone.is_active == True %}
+                                    <div class="activelistitem">Actif</div>
+                                {% else %}
+                                    <div class="activelistitem">Inactif</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="dropdown optionblock">
+                                    <button class="btn dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"><p>Options</p></button>
+                                    <div class="dropdown-menu"> 
+                                        <a class="dropdown-item dropitem statusForm" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:status-sponsoringzone'%}" 
+                                            data-id="{{sponsoringzone.id}}"
+                                            data-token="{{csrf_token}}" 
+                                            data-message="{% if sponsoringzone.is_active %}Cette Zone sera desormais Inactive!{% else %}Cette Zone sera desormais Active!{% endif %}"
+                                            data-type="warning"
+                                            >
+                                            <i class="fas fa-ban"></i> 
+                                            {% if sponsoringzone.is_active %}Bloquer cette Zone{% else %}Activer cette Zone{% endif %}
+                                        </a> 
+
+                                        <a class="dropdown-item dropitem updatesponsoringzone" href="Javascript:void()"
+                                            data-id="{{sponsoringzone.id}}"
+                                            data-name="{{sponsoringzone.name}}" 
+                                            data-codezone="{{sponsoringzone.code}}" 
+                                        >
+                                        <i class="fas fa-edit"></i> Modifier cette Zone</a>
+
+                                        <a class="dropdown-item dropitem deleteSubmit" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:delete-sponsoringzone'%}" 
+                                            data-id="{{sponsoringzone.id}}"
+                                            data-type="warning"
+                                            data-message="Attention cette opération est ireversible, cliquez sur oui pour continuer."
+                                            data-token="{{csrf_token}}">
+                                            <i class="fas fa-trash"></i> Supprimer cette Zone</a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr >
+                        <td colspan="12" class="text-primary text-center" >
+                            <p class="emptylist">Aucune Zone n'a été enregistré!</p>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        </div>
+        <!-- /.content --> 
+
+    </div>
+
+    <!--Modal de creation des sponsoringzones -->
+    <div class="modal fade"  id="sponsoringzoneCreation" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Nouvelle Zone</h4>
+                    <button type="button" class="close closeaddsponsoringzone" data-dismiss="modal">&times;</button>
+                </div>  
+                <!-- Modal body -->
+                <form class="createSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:create-sponsoringzone' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='creator' value="{{request.user.id}}" />
+                    <div class="modal-body">
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Intitulé de la Zone' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="name" required placeholder="Nom... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Code de la Zone' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="code" required placeholder="Code... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+                     
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeaddsponsoringzone">{% trans 'Annuler' %}</button>
+                        <button type="submit" id="buttomcreate" class="btn newBtn createbtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+     <!--Modal de mise à jour des sponsoringzones -->
+     <div class="modal fade"  id="sponsoringzoneUpdate" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Mise à jour de la Zone</h4>
+                    <button type="button" class="close closeupdatesponsoringzone" data-dismiss="modal">&times;</button>
+                </div>  
+                <!-- Modal body -->
+                <form class="updateSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:update-sponsoringzone' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='id' id="sponsoringzoneid" />
+                    <div class="modal-body">
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Intitulé de la Zone' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="name" id="sponsoringzonename" placeholder="Nom... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Code de la Zone' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="code" placeholder="Code... "  id="sponsoringzonecode" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeupdatesponsoringzone">{% trans 'Annuler' %}</button>
+                        <button type="submit" id="buttomupdate" class="btn newBtn updatebtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock content  %}

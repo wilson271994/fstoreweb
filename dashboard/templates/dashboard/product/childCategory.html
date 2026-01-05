@@ -1,0 +1,198 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static thumbnail i18n widget_tweaks countries %}
+{% block content  %}
+<div class="container-xxl flex-grow-1 container-p-y">
+
+    <!-- childcategorys List Table -->
+    <div class="card">
+        <div class="card-header border-bottom row">
+            <h5 class="card-title col-lg-7">Listes des Sous Catégorie</h5>
+            <div class="col-lg-3 searchpage">
+                <input class="form-control" id="searchchildcategory" type="text" placeholder="Recherche..">
+            </div>
+            <div class="plusbtn col-lg-2" id="addchildcategory"><i class="fa fa-plus-circle"></i></div>
+        </div> 
+        
+        <!-- Main content -->
+        <div class="card-body">
+        <table id="filterchildcategory" class="table shadow-card">
+            <thead>
+                <tr>
+                    <th>Intitulés</th>
+                    <th>Sous-sous Catégories</th>
+                    <th>Créer par</th>
+                    <th>Status</th>
+                    <th>Plus ></th>
+                </tr>
+            </thead>    
+            <tbody>
+                {% if allchildcategory %}
+                    {% for childcategory in allchildcategory %}
+                        <tr>
+                            <td>{{childcategory.name}}</td>
+                            <td>
+                                {% for i in childcategory.grantchildcategory %}
+                                   - {{  i.name }} <br>
+                                {% endfor %}
+                            </td>
+                            <td>{{childcategory.author}} </td>
+                            <td>
+                                {% if childcategory.is_active == True %}
+                                    <div class="activelistitem">Actif</div>
+                                {% else %}
+                                    <dic class="activelistitem">Inactif</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="dropdown optionblock">
+                                    <button class="btn dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"><p>Options</p></button>
+                                    <div class="dropdown-menu"> 
+                                        <a class="dropdown-item dropitem validatechildcategory" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:status-child-category'%}" 
+                                            data-id="{{childcategory.id}}"
+                                            data-token="{{csrf_token}}" 
+                                            onclick="childcategoryStatus(this)">
+                                        <i class="fas fa-ban"></i> Activer/Deactiver</a> 
+
+                                        <a class="dropdown-item dropitem updatechildcategory" href="Javascript:void()"
+                                            data-id="{{childcategory.id}}"
+                                            data-name="{{childcategory.name}}"
+                                            data-subcategory="{{childcategory.name}}"
+                                        >
+                                        <i class="fas fa-edit"></i> Modifier</a>
+
+                                        <a class="dropdown-item dropitem deleteSubmit" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:delete-child-category'%}" 
+                                            data-id="{{childcategory.id}}"
+                                            data-type="warning"
+                                            data-message="Attention cette opération est ireversible, cliquez sur oui pour continuer."
+                                            data-token="{{csrf_token}}">
+                                            <i class="fas fa-trash"></i> Supprimer</a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr >
+                        <td colspan="7" class="text-primary text-center" >
+                            <p class="emptylist">Aucun sous catégorie n'a été enregistré!</p>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        </div>
+        <!-- /.content --> 
+
+    </div>
+
+    <!--Modal de creation child category -->
+    <div class="modal fade"  id="childcategoryCreation" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logo.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Nouvelle Sous Catégorie</h4>
+                    <button type="button" class="close closeaddchildcategory" data-dismiss="modal">&times;</button>
+                </div>  
+                <!-- Modal body -->
+                <form class="createSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:create-child-category' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='creator' value="{{request.user.id}}" />
+                    <div class="modal-body">
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Intitulé de la catégorie' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="name" required placeholder="Catégorie... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div> 
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Choisir la ou les Sous-sous Catégorie(s)' %}</p> 
+                                <div class="form-group label-floating">
+                                    <select name="grantchildcategory" class="form-control selectpicker" 
+                                    multiple data-selected-text-format="count > 3"
+                                    data-live-search="true"
+                                    required>
+                                        {% for item in grantchild %}
+                                            <option value="{{item.id}}">{{item.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeaddchildcategory">{% trans 'Annuler' %}</button>
+                        <button type="submit" id="buttomcreate" class="btn newBtn createbtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal de update childcategory -->
+    <div class="modal fade"  id="childcategoryUpdate" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logo.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Mise à jour de la Sous Catégorie</h4>
+                    <button type="button" class="close closeupdatechildcategory" data-dismiss="modal">&times;</button>
+                </div>  
+                <!-- Modal body -->
+                <form class="updateSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:update-child-category' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <input type="hidden" name="id" id="childid">
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Intitulé de la catégorie' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="name" id="childname" placeholder="Catégorie... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Choisir la ou les Sous-sous Catégorie(s)' %}</p>
+                                <div class="form-group label-floating">
+                                    <select name="grantchildcategory" class="form-control selectpicker" 
+                                    multiple data-selected-text-format="count > 3"
+                                    data-live-search="true"
+                                    >
+                                        {% for item in grantchild %}
+                                            <option value="{{item.id}}">{{item.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeupdatechildcategory">{% trans 'Annuler' %}</button>
+                        <button type="submit" id="buttomcreate" class="btn newBtn createbtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock content  %}

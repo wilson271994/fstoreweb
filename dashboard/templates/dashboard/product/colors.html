@@ -1,0 +1,182 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static thumbnail i18n widget_tweaks countries %}
+{% block content  %}
+<div class="container-xxl flex-grow-1 container-p-y">
+
+    <!-- colors List Table -->
+    <div class="card">
+        <div class="card-header border-bottom row">
+            <a class="homebtn col-lg-1" href="{% url 'dashboard:home-attribute'%}">
+                <i class="fa fa-chevron-circle-left"></i>
+            </a>
+            <h5 class="card-title col-lg-6">Liste des couleurs</h5>
+            <div class="col-lg-3 searchpage">
+                <input class="form-control" id="searchcolor" type="text" placeholder="Recherche..">
+            </div>
+            <div class="plusbtn col-lg-2" id="addcolor"><i class="fa fa-plus-circle"></i></div>
+        </div> 
+        
+        <!-- Main content -->
+        <div class="card-body">
+        <table id="filtercolor" class="table shadow-card">  
+            <thead>
+                <tr>
+                    <th>Intitulés</th>
+                    <th>Code couleurs</th>
+                    <th>Créer par</th>
+                    <th>Status</th>
+                    <th>Plus ></th>
+                </tr>
+            </thead>    
+            <tbody>
+                {% if allcolor %}
+                    {% for color in allcolor %}
+                        <tr>
+                            <td>{{color.name}}</td>
+                            <td>{{color.code}}</td>
+                            <td>{{color.author}}</td>
+                            <td>
+                                {% if color.is_active == True %}
+                                    <div class="activelistitem">Actif</div>
+                                {% else %}
+                                    <div class="activelistitem">Inactif</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="dropdown optionblock">
+                                    <button class="btn dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"><p>Options</p></button>
+                                    <div class="dropdown-menu"> 
+                                        <a class="dropdown-item dropitem validatecolor" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:status-color'%}" 
+                                            data-id="{{color.id}}"
+                                            data-token="{{csrf_token}}" 
+                                            onclick="colorStatus(this)">
+                                        <i class="fas fa-ban"></i> Activer/Deactiver</a> 
+
+                                        <a class="dropdown-item dropitem updatecolor" href="Javascript:void()"
+                                            data-id="{{color.id}}"
+                                            data-name="{{color.name}}" 
+                                            data-code="{{color.code}}" 
+                                        >
+                                        <i class="fas fa-edit"></i> Modifier</a>
+
+                                        <a class="dropdown-item dropitem deleteSubmit" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:delete-color'%}" 
+                                            data-id="{{color.id}}"
+                                            data-token="{{csrf_token}}">
+                                            <i class="fas fa-trash"></i> Supprimer</a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr >
+                        <td colspan="7" class="text-primary text-center" >
+                            <p class="emptylist">Aucune color n'a été enregistré!</p>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        </div>
+        <!-- /.content --> 
+
+    </div>
+
+    <!--Modal de creation des colors -->
+    <div class="modal fade"  id="colorCreation" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Nouvelle Couleur</h4>
+                    <button type="button" class="close closeaddcolor" data-dismiss="modal">&times;</button>
+                </div>  
+                <!-- Modal body -->
+                <form class="createSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:create-color' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='creator' value="{{request.user}}" />
+                    <div class="modal-body">
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Intitulé de la Couleur' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="name" required placeholder="couleur... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Code de la Couleur' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="code" required placeholder="code couleur... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeaddcolor">{% trans 'Annuler' %}</button>
+                        <button type="submit" id="buttoncreate" class="btn newBtn createbtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal de mise à jour des colors -->
+    <div class="modal fade"  id="colorUpdate" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Mise à jour de la Couleur</h4>
+                    <button type="button" class="close closeupdatecolor" data-dismiss="modal">&times;</button>
+                </div>  
+                <!-- Modal body -->
+                <form class="createSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:update-color' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='id' id="colorid" />
+                    <div class="modal-body">
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Intitulé de la Couleur' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" id="colornameid"  name="name" placeholder="couleur... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Code de la Couleur' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" id="colorcodeid"  name="code" placeholder="code couleur... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeupdatecolor">{% trans 'Annuler' %}</button>
+                        <button type="submit" class="buttomcreate btn newBtn updatebtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock content  %}

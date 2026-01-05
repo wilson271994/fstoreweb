@@ -1,0 +1,108 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="light-style layout-wide  customizer-hide" dir="ltr" data-theme="theme-default" data-template="vertical-menu-template">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+  <title>FStore - Admin - Login</title>
+
+  <meta name="description" content="" />
+  <meta name="keywords" content="">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="{% static 'images/logo.png' %}" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="{% static 'auth/vendor/fonts/boxicons.css' %}" />
+  <link rel="stylesheet" href="{% static 'auth/vendor/fonts/fontawesome.css' %}" />
+  <link rel="stylesheet" href="{% static 'auth/vendor/fonts/flag-icons.css' %}" />
+
+  <!-- Core CSS -->
+  <link rel="stylesheet" href="{% static 'auth/vendor/css/rtl/core.css' %}"/>
+  <link rel="stylesheet" href="{% static 'auth/vendor/css/rtl/theme-default.css' %}"/>
+  <link rel="stylesheet" href="{% static 'auth/css/demo.css' %}" />
+  <link rel="stylesheet" href="{% static 'backend/css/toastr.min.css' %}" />
+
+  <!-- Page CSS -->
+  <!-- Page -->
+  <link rel="stylesheet" href="{% static 'auth/vendor/css/pages/page-auth.css' %}">
+
+</head>
+
+<body>
+<div class="authentication-wrapper authentication-cover">
+  <div class="authentication-inner row m-0">
+    <!-- /Left Text -->
+    <div class="d-none d-lg-flex col-lg-7 col-xl-8 align-items-center p-5">
+      <div class="w-100 d-flex justify-content-center">
+        <img src="{% static 'auth/img/illustrations/boy-with-rocket-light.png' %}" class="img-fluid" alt="Login image" width="700">
+      </div>
+    </div>
+    <!-- /Left Text -->
+
+    <!-- Login -->
+    <div class="d-flex col-12 col-lg-5 col-xl-4 align-items-center authentication-bg p-sm-5 p-4">
+      <div class="w-px-400 mx-auto">
+        <!-- Logo -->
+        <div class="app-brand mb-5">
+          <a href="index.html" class="app-brand-link gap-2">
+            <img src="{% static 'images/logo.png' %}" alt="">
+          </a>
+        </div>
+        <!-- /Logo -->
+        <h4 class="mb-2">Heureux de vous revoir! 👋</h4>
+        <p class="mb-4">Veuillez vous connecter à votre compte et commencer l'aventure</p>
+
+        <form id="loginSubmit" class="mb-3" action="{% url 'core:auth-login' %}" enctype="multipart/form-data" method="POST">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="email" class="form-label">Email ou Utiisateur</label>
+            <input type="text" class="form-control" id="email" name="username" placeholder="Saisissez votre adresse e-mail ou votre nom d'utilisateur" autofocus>
+          </div>
+          <div class="mb-3 form-password-toggle">
+            <div class="d-flex justify-content-between">
+              <label class="form-label" for="password">Mot de passe</label>
+            </div>
+            <div class="input-group input-group-merge">
+              <input type="password" id="password" class="form-control" name="password" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="password" />
+              <span class="input-group-text cursor-pointer" onclick="togglePasswordLogin(this)"><i class="bx bx-hide eyeicon1"></i></span>
+            </div>
+          </div>
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="remember-me">
+              <label class="form-check-label" for="remember-me">
+                Souviens-toi de moi
+              </label>
+            </div>
+          </div>
+          <button class="btn btn-primary d-grid w-100" id="loginbtn">
+            Connexion
+          </button>
+        </form>
+
+      </div>
+    </div>
+    <!-- /Login -->
+  </div>
+</div>
+
+  <script src="{% static 'backend/vendor/libs/jquery/jquery.js' %}"></script>
+
+  <!-- Vendors JS -->
+  <script src="{% static 'auth/vendor/libs/%40form-validation/umd/bundle/popular.min.js' %}"></script>
+  <script src="{% static 'auth/vendor/libs/%40form-validation/umd/plugin-bootstrap5/index.min.js' %}"></script>
+  <script src="{% static 'auth/vendor/libs/%40form-validation/umd/plugin-auto-focus/index.min.js' %}"></script>
+
+
+  <script src="{% static 'backend/js/staticscript/toastr.min.js' %}"></script>
+
+  <!-- Page JS -->
+  <script src="{% static 'auth/js/pages-auth.js' %}"></script>
+  <script src="{% static 'auth/js/auth.js' %}"></script>
+  
+</body>
+
+</html>
+

@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        /* Inline CSS */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+
+        .email-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border: 1px solid #dddddd;
+            border-radius: 5px;
+        }
+
+        .header {
+            background-color: #4675e3;
+            color: #ffffff;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .image {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .footer {
+            background-color: #f0f0f0;
+            text-align: center;
+            padding: 10px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>Activation du compte Fstore</h1>
+        </div>
+        <div class="content">
+            <p>Bienvenu sur Fstore {{ receiver_name }} votre compte a été créé avec succès!,</p>
+            <p>Pour l'activer, veuillez saisir le code suivant dans le formulaire d'inscription.</p>
+            <p> Votre code est : {{ code }} </p>
+            <p>Profitez de nos offres et n'hésitez pas de nous contacter en cas de besoin sur contact@fripme.com</p>
+            <br /> 
+            Merci
+            <br />
+            Cordialement.
+            <br />
+        </div>
+        <div class="footer">
+            &copy; {{ date }} Fstore tous droits réservés.
+        </div>
+    </div>
+</body>
+</html>

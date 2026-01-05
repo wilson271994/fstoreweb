@@ -1,0 +1,279 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static thumbnail i18n widget_tweaks countries %}
+{% block content  %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row g-4 mb-4">
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Toutes les Fournisseurs</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">{{providers}}</h4>
+                </div>
+                <small>Total</small>
+                </div>
+                <span class="badge bg-label-primary rounded p-2">
+                <i class="bx bx-flag bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Fournisseurs Inactives</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">{{inactiveprovider}}</h4>
+                </div>
+                <small>Total </small>
+                </div>
+                <span class="badge bg-label-danger rounded p-2">
+                <i class="bx bx-flag bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Fournisseurs Actives</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">{{activeprovider}}</h4>
+                </div>
+                <small>Total</small>
+                </div>
+                <span class="badge bg-label-success rounded p-2">
+                <i class="bx bx-flag bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="content-left">
+                <span>Fournisseurs Favorites</span>
+                <div class="d-flex align-items-end mt-2">
+                    <h4 class="mb-0 me-2">0</h4>
+                </div>
+                <small>Total</small>
+                </div>
+                <span class="badge bg-label-warning rounded p-2">
+                <i class="bx bx-flag bx-sm"></i>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Brand List Table -->
+    <div class="card">
+        <div class="card-header border-bottom row">
+            <h5 class="card-title col-lg-7">Liste des Fournisseurs</h5>
+            <div class="col-lg-3 searchpage">
+                <input class="form-control" id="searchprovider" type="text" placeholder="Recherche..">
+            </div>
+            <div class="plusbtn col-lg-2" id="addprovider"><i class="fa fa-plus-circle"></i></div>
+        </div> 
+        
+        <!-- Main content -->
+        <div class="card-body">
+        <table id="filterprovider" class="table shadow-card">
+            <thead>
+                <tr>
+                    <th>Logos</th>
+                    <th>Nom</th>
+                    <th>Créée par</th>
+                    <th>Validation</th>
+                    <th>Status</th>
+                    <th>Plus ></th>
+                </tr>
+            </thead>    
+            <tbody>
+                {% if allprovider %}
+                    {% for item in allprovider %}
+                        <tr>
+                            <td>
+                                {% if item.logo %}
+                                    <img src="{{ item.logo.url }}" class='img-circle elevation-2 pp_user'/>
+                                {% else %}
+                                    <img src="{% static 'backend/img/avatars/avatar.png' %}" class='img-circle elevation-2 pp_user'/>
+                                {% endif %}
+                            </td>
+                            <td>{{item.name}}</td>
+                            <td>{{item.creator}}</td>
+                            <td>
+                                {% if item.is_approved %}
+                                    <div class="activelistitem">Approuver</div>
+                                {% else %}
+                                    <div class="activelistitem">Non Approuver</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.is_active %}
+                                    <div class="activelistitem">Actif</div>
+                                {% else %}
+                                    <div class="activelistitem">Inactif</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="dropdown optionblock">
+                                    <button class="btn dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"><p>Options</p></button>
+                                    <div class="dropdown-menu"> 
+                                        <a class="dropdown-item dropitem validationForm" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:validate-provider'%}" 
+                                            data-id="{{item.id}}"
+                                            data-token="{{csrf_token}}"
+                                            data-message="{% if item.is_approved %}Ce Fournisseur ne sera plus accessible!{% else %}Ce Fournisseur sera desormais accessible!{% endif %}"
+                                            data-type="warning">
+                                            <i class="fas fa-shield"></i> 
+                                            {% if item.is_approved %}Deapprouver ce Fournisseur{% else %}Approuver ce Fournisseur{% endif %}
+                                        </a> 
+                                        
+                                        <a class="dropdown-item dropitem statusForm" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:status-provider'%}" 
+                                            data-id="{{item.id}}"
+                                            data-token="{{csrf_token}}" 
+                                            data-message="{% if item.is_active %}Ce Fournisseur sera désormais Inactive!{% else %}Ce Fournisseur sera désormais Active!{% endif %}"
+                                            data-type="warning"
+                                            >
+                                        <i class="fas fa-ban"></i> 
+                                            {% if item.is_active %}Bloquer ce Fournisseur{% else %}Activer ce Fournisseur{% endif %}
+                                        </a> 
+
+                                        <a class="dropdown-item dropitem updateProvider" href="Javascript:void()"
+                                            data-id="{{item.id}}"
+                                            data-name="{{item.name}}" 
+                                            data-logo="{{item.logo}}"
+                                        >
+                                        <i class="fas fa-edit"></i> Modifier</a>
+
+                                        <a class="dropdown-item dropitem deleteSubmit" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:delete-provider'%}" 
+                                            data-id="{{item.id}}"
+                                            data-message="La suppression de ce Fournisseur sera définitive."
+                                            data-type="warning"
+                                            data-token="{{csrf_token}}">
+                                            <i class="fas fa-trash"></i> Supprimer</a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr >
+                        <td colspan="7" class="text-primary text-center" >
+                            <p class="emptylist">Aucun Fournisseur n'a été enregistré!</p>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        </div>
+        <!-- /.content --> 
+
+    </div>
+
+    <!--Modal de creation  -->
+    <div class="modal fade"  id="providerCreation" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Nouveau Fournisseur</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="createSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:create-provider' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='creator' value="{{request.user.id}}" />
+                    <div class="modal-body">
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Nom du Fournisseur' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="name" required placeholder="Marque... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Logo du Fournisseur' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type="file"  name="logo" required  />
+                                </div>
+                            </div>
+                        </div><hr>
+                        
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset" data-bs-dismiss="modal"  class="btn btn-bg-secondary">{% trans 'Annuler' %}</button>
+                        <button type="submit" id="buttomcreate" class="btn newBtn createbtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal de mise à jour -->
+    <div class="modal fade"  id="providerUpdate" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Mise à jour du Fournisseur</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="createSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:update-provider' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='id' id="providerid" />
+                    <div class="modal-body">
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Nom du Fournisseur' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" id="providername"  name="name" placeholder="Fournisseur... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Logo du Fournisseur' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" type="file"  name="logo"  />
+                                </div>
+                            </div>
+                        </div><hr>
+                        
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeupdatebrand">{% trans 'Annuler' %}</button>
+                        <button type="submit" class="btn newBtn updatebtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock content  %}

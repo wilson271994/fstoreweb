@@ -1,0 +1,268 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static thumbnail i18n widget_tweaks countries %}
+{% block content  %}
+<div class="container-xxl flex-grow-1 container-p-y">
+
+    <!-- FAQ category List Table -->
+    <div class="card">
+        <div class="card-header border-bottom row">
+            <h5 class="card-title col-lg-8">Liste des Services du Support</h5>
+            <div class="col-lg-2 searchpage">
+                <input class="form-control" id="searchservicesupport" type="text" placeholder="Recherche..">
+            </div>
+            <div class="plusbtn col-lg-2" id="addservicesupport"><i class="fa fa-plus-circle"></i></div>
+        </div> 
+        
+        <!-- Main content -->
+        <div class="card-body">
+            <table id="filterservicesupport" class="table shadow-card">
+                <thead>
+                    <tr>
+                        <th>Titres</th>
+                        <th>Description</th>
+                        <th>Service Facturé</th>
+                        <th>Prix</th>
+                        <th>Validation</th>
+                        <th>Status</th>
+                        <th>Plus ></th>
+                    </tr>
+                </thead>    
+                <tbody>
+                    {% if allsupportservice %}
+                        {% for item in allsupportservice %}
+                            <tr>
+                                <td>{{item.title}}</td>
+                                <td>{{item.description|striptags}}</td>
+                                <td>
+                                    {% if item.is_payment_required == True %}
+                                        <div class="activelistitem">Service Payant</div>
+                                    {% else %}
+                                        <div class="activelistitem">Service Non Payant</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.is_payment_required == True %}
+                                        <div class="activelistitem">{{ item.price }}</div>
+                                    {% else %}
+                                        <div class="activelistitem">Non Disponible</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.is_approuved == True %}
+                                        <div class="activelistitem">Service Approuvé</div>
+                                    {% else %}
+                                        <div class="activelistitem">Service Non Approuvé</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.is_active == True %}
+                                        <div class="activelistitem">Actif</div>
+                                    {% else %}
+                                        <div class="activelistitem">Inactif</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="dropdown optionblock">
+                                        <button class="btn dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"><p>Options</p></button>
+                                        <div class="dropdown-menu"> 
+                                            <a class="dropdown-item dropitem validationForm" href="JavaScript:void()" 
+                                                data-url="{% url 'dashboard:validate-support-service'%}"
+                                                data-id="{{item.id}}"
+                                                data-token="{{csrf_token}}"
+                                                data-message="{% if item.is_approuved %}Ce Service ne sera plus visible!{% else %}Ce Service sera désormais visible!{% endif %}"
+                                                data-type="warning">
+                                                <i class="fas fa-shield"></i> 
+                                                {% if item.is_approuved %}Deapprouver ce service{% else %}Approuver ce service{% endif %}
+                                            </a> 
+
+                                            <a class="dropdown-item dropitem statusForm" href="JavaScript:void()" 
+                                                data-url="{% url 'dashboard:status-support-service'%}" 
+                                                data-id="{{item.id}}"
+                                                data-token="{{csrf_token}}" 
+                                                data-message="{% if item.is_active %}Ce Service sera desormais Inactif!{% else %}Ce Service sera desormais Actif!{% endif %}"
+                                                data-type="warning"
+                                                >
+                                                <i class="fas fa-ban"></i> 
+                                                {% if item.is_active %}Bloquer ce Service{% else %}Activer ce Service{% endif %}
+                                            </a>  
+
+                                            <a class="dropdown-item dropitem updateservicesupport" href="Javascript:void()"
+                                                data-id="{{item.id}}"
+                                                data-title="{{item.title}}" 
+                                                data-ispayment="{{item.is_payment_required}}" 
+                                                data-price="{{item.price}}" 
+                                                data-description="{{item.description|striptags}}" 
+                                            >
+                                            <i class="fas fa-edit"></i> Modifier ce Service</a>
+
+                                            <a class="dropdown-item dropitem deleteSubmit" href="JavaScript:void()" 
+                                                data-url="{% url 'dashboard:delete-support-service'%}" 
+                                                data-id="{{item.id}}"
+                                                data-type="warning"
+                                                data-message="Attention cette opération est irreversible, cliquez sur oui pour continuer."
+                                                data-token="{{csrf_token}}">
+                                                <i class="fas fa-trash"></i> Supprimer ce Catégorie</a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr >
+                            <td colspan="12" class="text-primary text-center">
+                                <p class="emptylist">Aucun service n'a été enregistré!</p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        <!-- /.content --> 
+    </div>
+
+    <!--Modal de creation des services -->
+    <div class="modal fade"  id="serviceSupportCreation" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logo.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Nouveau Service</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="createSubmit" method="post" enctype="multipart/form-data" onsubmit="postSubmission(this)"  action="{% url 'dashboard:create-support-service' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='creator' value="{{request.user.id}}" />
+                    <div class="modal-body">
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Titre du service' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="title" required placeholder="Titre... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Service Payant ou pas' %}</p>
+                                <div class="form-group label-floating">
+                                    <select name="payment" class="form-control">
+                                        <option value=False"" selected>Selectionner</option>
+                                        <option value="True">Service Payant</option>
+                                        <option value="False">Service Non Payant</option>
+                                    </select>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Si le Service est payant veuillez préciser le prix (Optionnel)' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="price" placeholder="10 BC" value="0" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12" >
+                                <p  class="titleform">Description</p>
+                                <div class="form-group label-floating">
+                                    <div class="editor" style="height:20vh"></div>
+                                    <input class="form-control post-content" name="description" type="hidden"/>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset" data-bs-dismiss="modal" aria-label="Close" class="btn btn-bg-secondary">{% trans 'Annuler' %}</button>
+                        <button type="submit" id="buttomcreate" class="btn newBtn createbtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal de mise à jour des Services -->
+    <div class="modal fade"  id="serviceSupportUpdateModal" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logo.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Mise à jour du Service</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="updateSubmit" method="post" enctype="multipart/form-data" onsubmit="postSubmissionUpdate(this)"  action="{% url 'dashboard:update-support-service' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='id' id="servicesupportid" />
+                    <div class="modal-body">
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Titre du service' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="title" id="servicesupporttitle" placeholder="Titre... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Service Payant ou pas' %}</p>
+                                <div class="form-group label-floating">
+                                    <select name="payment" class="form-control" id="servicesupportpayment">
+                                        <option value=False"" selected>Selectionner</option>
+                                        <option value="True">Service Payant</option>
+                                        <option value="False">Service Non Payant</option>
+                                    </select>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Si le Service est payant veuillez préciser le prix (Optionnel)' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="price" placeholder="10 BC" value="0" id="servicesupportprice" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xs-12" >
+                                <p  class="titleform">Description</p>
+                                <div class="form-group label-floating">
+                                    <div class="editorupdate" style="height:20vh"></div>
+                                    <input class="form-control post-content-update" name="description" type="hidden"/>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset" data-bs-dismiss="modal" aria-label="Close" class="btn btn-bg-secondary">{% trans 'Annuler' %}</button>
+                        <button type="submit" class="btn newBtn updatebtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock content  %}

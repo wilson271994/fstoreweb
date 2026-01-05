@@ -1,0 +1,182 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static thumbnail i18n widget_tweaks countries %}
+{% block content  %}
+<div class="container-xxl flex-grow-1 container-p-y">
+
+    <!-- materials List Table -->
+    <div class="card">
+        <div class="card-header border-bottom row">
+            <a class="homebtn col-lg-1" href="{% url 'dashboard:home-attribute'%}">
+                <i class="fa fa-chevron-circle-left"></i>
+            </a>
+            <h5 class="card-title col-lg-6">Liste des Matières</h5>
+            <div class="col-lg-3 searchpage">
+                <input class="form-control" id="searchmaterial" type="text" placeholder="Recherche..">
+            </div>
+            <div class="plusbtn col-lg-2" id="addmaterial"><i class="fa fa-plus-circle"></i></div>
+        </div> 
+        
+        <!-- Main content -->
+        <div class="card-body">
+        <table id="filtermaterial" class="table shadow-card">
+            <thead>
+                <tr>
+                    <th>Intitulés</th>
+                    <th>Descriptions</th>
+                    <th>Créer par</th>
+                    <th>Status</th>
+                    <th>Plus ></th>
+                </tr>
+            </thead>    
+            <tbody>
+                {% if allmaterial %}
+                    {% for material in allmaterial %}
+                        <tr>
+                            <td>{{material.name}}</td>
+                            <td>{{material.description|truncatechars:50}}</td>
+                            <td>{{material.author}}</td>
+                            <td>
+                                {% if material.is_active == True %}
+                                    <div class="activelistitem">Actif</div>
+                                {% else %}
+                                    <div class="activelistitem">Inactif</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="dropdown optionblock">
+                                    <button class="btn dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"><p>Options</p></button>
+                                    <div class="dropdown-menu"> 
+                                        <a class="dropdown-item dropitem validatematerial" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:status-material'%}" 
+                                            data-id="{{material.id}}"
+                                            data-token="{{csrf_token}}" 
+                                            onclick="materialStatus(this)">
+                                        <i class="fas fa-ban"></i> Activer/Deactiver</a> 
+
+                                        <a class="dropdown-item dropitem updatematerial" href="Javascript:void()"
+                                            data-id="{{material.id}}"
+                                            data-name="{{material.name}}" 
+                                            data-description="{{material.description}}" 
+                                        >
+                                        <i class="fas fa-edit"></i> Modifier</a>
+
+                                        <a class="dropdown-item dropitem deleteSubmit" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:delete-material'%}" 
+                                            data-id="{{material.id}}"
+                                            data-token="{{csrf_token}}">
+                                            <i class="fas fa-trash"></i> Supprimer</a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr >
+                        <td colspan="7" class="text-primary text-center" >
+                            <p class="emptylist">Aucun matière n'a été enregistré!</p>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        </div>
+        <!-- /.content --> 
+
+    </div>
+
+    <!--Modal de creation des materials -->
+    <div class="modal fade"  id="materialCreation" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Nouvelle Matière</h4>
+                    <button type="button" class="close closeaddmaterial" data-dismiss="modal">&times;</button>
+                </div>  
+                <!-- Modal body -->
+                <form class="createSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:create-material' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='creator' value="{{request.user}}" />
+                    <div class="modal-body">
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Intitulé de la Matière' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="name" required placeholder="matière... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Description de la Matière' %}</p>
+                                <div class="form-group label-floating">
+                                    <textarea class="form-control" name="description" rows="3" placeholder="Description..."></textarea>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeaddmaterial">{% trans 'Annuler' %}</button>
+                        <button type="submit" id="buttomcreate" class="btn newBtn createbtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+     <!--Modal de mise à jour des materials -->
+     <div class="modal fade"  id="materialUpdate" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Mise à jour de la Matière</h4>
+                    <button type="button" class="close closeupdatematerial" data-dismiss="modal">&times;</button>
+                </div>  
+                <!-- Modal body -->
+                <form class="createSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:update-material' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='id' id="materialid" />
+                    <div class="modal-body">
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Intitulé de la Matière' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" id="materialnameid"  name="name" placeholder="matière... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Description de la Matière' %}</p>
+                                <div class="form-group label-floating">
+                                    <textarea class="form-control" name="description" id="materialdescriptionid" rows="3" placeholder="Description..."></textarea>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeupdatematerial">{% trans 'Annuler' %}</button>
+                        <button type="submit" class="btn newBtn updatebtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock content  %}

@@ -1,0 +1,113 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static thumbnail i18n widget_tweaks countries %}
+{% block content  %}
+<div class="container-xxl flex-grow-1 container-p-y">
+
+    <!-- customer List Table -->
+    <div class="card">
+        <div class="card-header border-bottom row">
+            <h5 class="card-title col-lg-8">Listes des Clients</h5>
+            <div class="col-lg-4 searchpage">
+                <input class="form-control" id="searchtraficcustomer" type="text" placeholder="Recherche..">
+            </div>
+        </div> 
+        
+        <!-- Main content -->
+        <div class="card-body">
+        <table id="filtertraficcustomer" class="table shadow-card">
+            <thead>
+                <tr>
+                    <th>Photos</th>
+                    <th>Noms</th>
+                    <th>Téléphones</th>
+                    <th>Payement Réussie</th>
+                    <th>Payement Annuler</th>
+                    <th>Total Transaction</th>
+                    <th>Transaction Réussie</th>
+                    <th>Transaction Echoué</th>
+                    <th>Status du client</th>
+                    <th>Plus ></th>
+                </tr>
+            </thead>    
+            <tbody>
+                {% if allfinancecustomer %}
+                    {% for traficcustomer in allfinancecustomer %}
+                        <tr>
+                            <td>
+                                {% if traficcustomer.pp %}
+                                    {% thumbnail traficcustomer.pp '200x200' as im %}
+                                    <img src="{{ im.url }}" class='img-circle elevation-2 pp_user'/>
+                                {% else %}
+                                    <img src="{% static 'backend/img/avatars/avatar.png' %}" class='img-circle elevation-2 pp_user'/>
+                                {% endif %}
+                            </td>
+                            <td>{{traficcustomer.name}} </td>
+                            <td>{{traficcustomer.phone}} </td>
+                            <td>
+                                <div class="activelistitem">{{traficcustomer.successpayment}} FR CFA</div>
+                            </td>
+                            <td>
+                                <div class="activelistitem">{{traficcustomer.cancelpayment}} FR CFA</div>
+                            </td>
+                            <td>
+                                <div class="activelistitem">{{traficcustomer.traficglobal}} FR CFA</div>
+                            </td>
+                            <td>{{traficcustomer.countsuccesstrans}} Réussie</td>
+                            <td>{{traficcustomer.countfailtrans}} Echouer</td>
+
+                            <td>
+                                {% if traficcustomer.is_active == True %}
+                                    <div class="activelistitem">Actif</div>
+                                {% else %}
+                                    <div class="activelistitem">Inactif</div>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <div class="dropdown optionblock">
+                                    <button class="btn dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"><p>Options</p></button>
+                                    <div class="dropdown-menu"> 
+                                        <a class="dropdown-item dropitem statusForm" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:customer-finance-status'%}" 
+                                            data-id="{{customer.id}}"
+                                            data-token="{{csrf_token}}" 
+                                            data-message="{% if customer.is_active %}Ce Client sera desormais Inactif!{% else %}Ce Client sera desormais Actif!{% endif %}"
+                                            data-type="warning"
+                                            >
+                                        <i class="fas fa-ban"></i> 
+                                            {% if customer.is_active %}Bloquer ce Client{% else %}Activer ce Client{% endif %}
+                                        </a> 
+                                        
+                                        <a class="dropdown-item dropitem updatetraficcustomer" href="Javascript:void()"
+                                            data-id="{{traficcustomer.id}}"
+                                            data-name="{{traficcustomer.name}}"
+                                            data-ownersexe="{{traficcustomer.sexe}}"
+                                            data-ownerbithday="{{traficcustomer.birthday_date}}"
+                                            data-email="{{traficcustomer.email}}"
+                                            data-phone="{{traficcustomer.phone}}"
+                                            data-address="{{traficcustomer.address}}"
+                                            data-countryid="{{traficcustomer.countryid}}"
+                                            data-countryname="{{traficcustomer.country}}"
+                                            data-city="{{traficcustomer.city}}"
+                                        >
+                                        <i class="fas fa-eye"></i> Visualiser</a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr >
+                        <td colspan="12" class="text-primary text-center" >
+                            <p class="emptylist">Aucun client n'a été enregistré!</p>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        </div>
+        <!-- /.content --> 
+
+    </div>
+</div>
+{% endblock content  %}

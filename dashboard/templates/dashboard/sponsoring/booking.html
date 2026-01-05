@@ -1,0 +1,247 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static thumbnail i18n widget_tweaks countries %}
+{% block content  %}
+<div class="container-xxl flex-grow-1 container-p-y">
+
+    <!-- sponsoringbookings List Table -->
+    <div class="card">
+        <div class="card-header border-bottom row">
+            <a class="homebtn col-lg-1" href="{% url 'dashboard:advertizing-home'%}">
+                <i class="fa fa-chevron-circle-left"></i>
+            </a>
+            <h5 class="card-title col-lg-6">Liste des Forfaits</h5>
+            <div class="col-lg-3 searchpage">
+                <input class="form-control" id="searchsponsoringbooking" type="text" placeholder="Recherche..">
+            </div>
+            <div class="plusbtn col-lg-2" id="addsponsoringbooking"><i class="fa fa-plus-circle"></i></div>
+        </div> 
+        
+        <!-- Main content -->
+        <div class="card-body">
+        <table id="filtersponsoringbooking" class="table shadow-card">
+            <thead>
+                <tr>
+                    <th>Intitulés</th>
+                    <th>Zone Ciblé</th>
+                    <th>Périodes (en Heur)</th>
+                    <th>Prix</th>
+                    <th>Status</th>
+                    <th>Plus ></th>
+                </tr>
+            </thead>    
+            <tbody>
+                {% if allsponsoringbooking %}
+                    {% for sponsoringbooking in allsponsoringbooking %}
+                        <tr>
+                            <td>{{sponsoringbooking.name}}</td>
+                            <td>{{sponsoringbooking.code_zone}}</td>
+                            <td>{{sponsoringbooking.periode}} Heure(s)</td>
+                            <td>
+                                <div class="activelistitem">{{sponsoringbooking.sponsoring_price}} FR CFA</div>
+                            </td>
+                            <td>
+                                {% if sponsoringbooking.is_active == True %}
+                                    <div class="activelistitem">Actif</div>
+                                {% else %}
+                                    <div class="activelistitem">Inactif</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="dropdown optionblock">
+                                    <button class="btn dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"><p>Options</p></button>
+                                    <div class="dropdown-menu"> 
+                                        <a class="dropdown-item dropitem statusForm" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:status-sponsoringbooking'%}" 
+                                            data-id="{{sponsoringbooking.id}}"
+                                            data-token="{{csrf_token}}" 
+                                            data-message="{% if sponsoringbooking.is_active %}Ce Forfait sera desormais Inactive!{% else %}Cette Forfait sera desormais Active!{% endif %}"
+                                            data-type="warning"
+                                            >
+                                            <i class="fas fa-ban"></i> 
+                                            {% if sponsoringbooking.is_active %}Bloquer ce Forfait{% else %}Activer ce Forfait{% endif %}
+                                        </a> 
+
+                                        <a class="dropdown-item dropitem updatesponsoringbooking" href="Javascript:void()"
+                                            data-id="{{sponsoringbooking.id}}"
+                                            data-name="{{sponsoringbooking.name}}" 
+                                            data-codezone="{{sponsoringbooking.code_zone}}" 
+                                            data-codezoneid="{{sponsoringbooking.code_zone.id}}" 
+                                            data-periode="{{sponsoringbooking.periode}}" 
+                                            data-sponsoringprice="{{sponsoringbooking.sponsoring_price}}" 
+                                        >
+                                        <i class="fas fa-edit"></i> Modifier ce Forfait</a>
+
+                                        <a class="dropdown-item dropitem deleteSubmit" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:delete-sponsoringbooking'%}" 
+                                            data-id="{{sponsoringbooking.id}}"
+                                            data-type="warning"
+                                            data-message="Attention cette opération est ireversible, cliquez sur oui pour continuer."
+                                            data-token="{{csrf_token}}">
+                                            <i class="fas fa-trash"></i> Supprimer ce Forfait</a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr >
+                        <td colspan="12" class="text-primary text-center" >
+                            <p class="emptylist">Aucun forfait n'a été enregistré!</p>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        </div>
+        <!-- /.content --> 
+
+    </div>
+
+    <!--Modal de creation des sponsoringbookings -->
+    <div class="modal fade"  id="sponsoringbookingCreation" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Nouveau Forfait</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="createSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:create-sponsoringbooking' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='creator' value="{{request.user.id}}" />
+                    <div class="modal-body">
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Intitulé du forfait' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="name" required placeholder="Intitilé... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Choisir l\'espace apporpriée' %}</p>
+                                <div class="form-group label-floating">
+                                    <select name="code_zone" class="form-control" required>
+                                        <option value="False">Selectionner</option>
+                                        {% for blockelem in allblock %}
+                                            <option value="{{blockelem.id}}">{{blockelem.name}}</option>
+                                        {% empty %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Période en heur' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="periode" required placeholder="Période... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Prix du forfait' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="sponsoring_price" required placeholder="prix... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeaddsponsoringbooking">{% trans 'Annuler' %}</button>
+                        <button type="submit" id="buttomcreate" class="btn newBtn createbtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+     <!--Modal de mise à jour des sponsoringbookings -->
+     <div class="modal fade"  id="sponsoringbookingUpdate" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logomini.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Mise à jour du forfait</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="createSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:update-sponsoringbooking' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='id' id="sponsoringbookingid" />
+                    <div class="modal-body">
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Intitulé du forfait' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="name" id="sponsoringbookingname" placeholder="Intitilé... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Choisir l\'espace apporpriée' %}</p>
+                                <div class="form-group label-floating">
+                                    <select name="code_zone" class="form-control" id="sponsoringbookingcodezone">
+                                        <option value="False">Selectionner</option>
+                                        {% for blockelem in allblock %}
+                                            <option value="{{blockelem.id}}">{{blockelem.name}}</option>
+                                        {% empty %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Période en heur' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="periode" id="sponsoringbookingperiode" placeholder="Période... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Prix du forfait' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control"  name="sponsoring_price" id="sponsoringbookingprice" placeholder="prix... " />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary closeupdatesponsoringbooking">{% trans 'Annuler' %}</button>
+                        <button type="submit" class="btn newBtn updatebtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock content  %}

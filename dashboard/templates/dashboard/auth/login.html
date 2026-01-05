@@ -1,0 +1,119 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+    <title>Administration | Fripme</title>
+
+    
+    <meta name="description" content="FRIPME MERCHANT CENTER" />
+    <meta name="keywords" content="">
+    
+      <!-- Favicon -->
+      <link rel="icon" type="image/png" href="{% static 'backend/img/logo.png' %}" />
+  
+      <!-- Icons -->
+      <link rel="stylesheet" href="{% static 'backend/vendor/fonts/boxicons.css' %}" />
+      <link rel="stylesheet" href="{% static 'backend/vendor/fonts/fontawesome.css' %}" />
+      <link rel="stylesheet" href="{% static 'backend/vendor/fonts/flag-icons.css' %}" />
+  
+        <!-- Core CSS -->
+        <link rel="stylesheet" href="{% static 'backend/vendor/css/rtl/core.css' %}" />
+        <link rel="stylesheet" href="{% static 'backend/vendor/css/rtl/theme-semi-dark.css' %}" />
+    
+        <!-- Vendors CSS -->
+        <link rel="stylesheet" href="{% static 'backend/vendor/libs/formvalidation/dist/css/formValidation.min.css' %}" />
+
+        <link rel="stylesheet" href="{% static 'backend/vendor/css/pages/page-auth.css' %}">
+  
+        <!-- Page CSS -->
+
+        <!-- Custom Css -->
+        
+        <link rel="stylesheet" href="{% static 'backend/css/style.css' %}" />
+        <link rel="stylesheet" href="{% static 'backend/css/toastr.min.css' %}" />
+</head>
+
+<body>  
+
+    <!-- Content -->
+    <div class="container-xxl">
+        <div class="authentication-wrapper authentication-basic container-p-y">
+            <div class="authentication-inner py-4">
+                <!-- Register -->
+                <div class="card">
+                    <div class="card-body">
+                        <!-- Logo -->
+                        <div class="app-brand justify-content-center">
+                            <a href="{% url 'dashboard:login_analytics'%}" class="gap-2">
+                                <span class="app-brand-logo demo">
+                                    <img src="{% static 'backend/img/logo.png' %}" alt="" class="logologin">
+                                </span>
+                            </a>
+                        </div>
+                        <!-- /Logo -->
+                        <h4 class="mb-2">Bienvenue sur FRIPME!</h4>
+                        <p class="mb-4"> Nous sommes heureux de vous revoir. Veuillez vous connectez.</p>
+
+                        <form id="LoginSubmit" class="mb-3" enctype="multipart/form-data" action="{% url 'core:auth-login'%}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" value="backend" name="module">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Utilisateur ou Adresse email</label>
+                                <input type="text" class="form-control" id="username" name="username" placeholder="Entrer nom d'utilisateur ou adresse email" autofocus>
+                            </div>
+                            <div class="mb-3 form-password-toggle">
+                            <div class="d-flex justify-content-between">
+                                <label class="form-label" for="password">Mot de passe</label>
+                                <a href="#">
+                                    <small>Not de passe oublié ?</small>
+                                </a>
+                            </div>
+                            <div class="input-group input-group-merge">
+                                <input type="password" id="password" class="form-control" name="password" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="password" />
+                                <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
+                            </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="remember-me">
+                                    <label class="form-check-label" for="remember-me">
+                                    Se souvenir de moi
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <button class="btn btn-primary d-grid w-100 adminloginbtn" type="submit">Connexion</button>
+                            </div>
+                        </form>
+
+                        <p class="text-center">
+                            © <script>
+                            document.write(new Date().getFullYear())
+                            </script>
+                            <b class="ownerlink">FRIPME All rights reserved </b>, made by <a href="https://poly-h.net/" target="_blank" class="footer-link fw-semibold pmadebylink">POLY-H International</a>
+                        </p>
+                    </div>
+                </div>
+            <!-- /Register -->
+            </div>
+        </div>
+    </div>
+
+    <!-- / Content -->
+
+    <!-- Core JS -->
+    <script src="{% static 'backend/vendor/libs/jquery/jquery.js' %}"></script>
+    <script src="{% static 'backend/vendor/libs/popper/popper.js' %}"></script>
+    <script src="{% static 'backend/vendor/js/bootstrap.js' %}"></script>
+
+    <script src="{% static 'backend/js/config.js' %}"></script>
+
+    
+    <!-- Custom JS -->
+    <script src="{% static 'backend/js/staticscript/toastr.min.js' %}"></script>
+    <script src="{% static 'backend/js/custom/auth.js' %}"></script>
+  
+</html>

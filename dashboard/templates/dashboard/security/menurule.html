@@ -1,0 +1,291 @@
+{% extends "dashboard/gabarit.html" %}
+{% load static thumbnail i18n widget_tweaks countries %}
+{% block content  %}
+<div class="container-xxl flex-grow-1 container-p-y">
+
+    <!-- devises List Table -->
+    <div class="card">
+        <div class="card-header border-bottom row">
+            <h5 class="card-title col-lg-7">Listes des Roles</h5>
+            <div class="col-lg-4 searchpage">
+                <input class="form-control" id="searchbank" type="text" placeholder="Recherche..">
+            </div>
+            <button class="col-lg-1 btnnew" data-bs-toggle="modal" data-bs-target="#createMenuRuleModal">
+                <i class="fa fa-plus-circle"></i> 
+            </button>
+        </div> 
+        
+        <!-- Main content -->
+        <div class="card-body">
+        <table id="filtermenurule" class="table shadow-card">
+            <thead>
+                <tr>
+                    <th>Label</th>
+                    <th>Menu</th>
+                    <th>Visualiser</th>
+                    <th>Créer</th>
+                    <th>Modifier</th>
+                    <th>Supprimer</th>
+                    <th>Status</th>
+                    <th>Plus ></th>
+                </tr>
+            </thead>    
+            <tbody>
+                {% if allmenurule %}
+                    {% for item in allmenurule %}
+                        <tr>
+                            <td>{{item.label}}</td>
+                            <td>{{item.menu}}</td>
+                            <td>
+                                {% if item.can_read %}
+                                    <div class="activelistitem">Oui</div>
+                                {% else %}
+                                    <div class="activelistitem">Non</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.can_create %}
+                                    <div class="activelistitem">Oui</div>
+                                {% else %}
+                                    <div class="activelistitem">Non</div>
+                                {% endif %}
+                            </td><td>
+                                {% if item.can_update %}
+                                    <div class="activelistitem">Oui</div>
+                                {% else %}
+                                    <div class="activelistitem">Non</div>
+                                {% endif %}
+                            </td><td>
+                                {% if item.can_delete %}
+                                    <div class="activelistitem">Oui</div>
+                                {% else %}
+                                    <div class="activelistitem">Non</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.is_active == True %}
+                                    <div class="activelistitem">Actif</div>
+                                {% else %}
+                                    <div class="activelistitem">Inactif</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="dropdown optionblock">
+                                    <button class="btn dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"><p>Options</p></button>
+                                    <div class="dropdown-menu"> 
+                                        <a class="dropdown-item dropitem statusForm" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:status-menu-rule'%}" 
+                                            data-id="{{item.id}}"
+                                            data-token="{{csrf_token}}" 
+                                            data-message="{% if item.is_active %}Ce Role sera desormais Inactive!{% else %}Ce Role sera desormais Active!{% endif %}"
+                                            data-type="warning"
+                                            >
+                                            <i class="fas fa-ban"></i> 
+                                            {% if item.is_active %}Bloquer ce Role{% else %}Activer ce Role{% endif %}
+                                        </a> 
+
+                                        <a class="dropdown-item dropitem updatemenu" href="Javascript:void()"
+                                            data-id="{{item.id}}"
+                                            data-label="{{item.label}}" 
+                                            data-menu="{{item.menu}}" 
+                                            data-menuid="{{item.menuid}}" 
+                                            data-canread="{{item.can_read}}" 
+                                            data-cancreate="{{item.can_create}}" 
+                                            data-canupdate="{{item.can_update}}" 
+                                            data-candelete="{{item.can_delete}}" 
+                                            data-bs-toggle="modal" data-bs-target="#updateMenuRuleModal"
+                                        >
+                                        <i class="fas fa-edit"></i> Modifier</a>
+
+                                        <a class="dropdown-item dropitem deleteSubmit" href="JavaScript:void()" 
+                                            data-url="{% url 'dashboard:delete-menu-rule'%}" 
+                                            data-id="{{item.id}}"
+                                            data-type="warning"
+                                            data-message="Attention cette opération est irréversible, cliquez sur oui pour continuer."
+                                            data-token="{{csrf_token}}">
+                                            <i class="fas fa-trash"></i> Supprimer</a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr >
+                        <td colspan="12" class="text-primary text-center" >
+                            <p class="emptylist">Aucun role n'a été enregistré!</p>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        </div>
+        <!-- /.content --> 
+
+    </div>
+
+    <!--Modal de creation -->
+    <div class="modal fade"  id="createMenuRuleModal" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logo.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Nouveau Role</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="createSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:create-menu-rule' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='create_by' value="{{request.user.id}}" />
+                    <div class="modal-body">
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Label' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" name="label" placeholder="Label..."  required/>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Menu' %}</p>
+                                <select name="menu" class="form-group label-floating selectinputform">
+                                    <option>Selectionner le menu</option>
+                                    {% for item in allmenu %}
+                                        <option value="{{ item.id }}">{{ item.title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Visualiser' %}</p>
+                                <div class="form-group label-floating">
+                                    <input type="checkbox" class="checkbox" name="can_read" />
+                                    <hr>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Créer' %}</p>
+                                <div class="form-group label-floating">
+                                    <input type="checkbox" class="checkbox" name="can_create" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Modifier' %}</p>
+                                <div class="form-group label-floating">
+                                    <input type="checkbox" class="checkbox" name="can_update" />
+                                    <hr>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Supprimer' %}</p>
+                                <div class="form-group label-floating">
+                                    <input type="checkbox" class="checkbox" name="can_delete" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary" data-bs-dismiss="modal" aria-label="Close">{% trans 'Annuler' %}</button>
+                        <button type="submit" id="buttomcreate" class="btn newBtn createbtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal de mise à jour -->
+    <div class="modal fade"  id="updateMenuRuleModal" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <img src="{% static 'backend/img/logo.png' %}" alt="Logo" class="logomodal">
+                    <h4 class="modal-title">Mise à jour des informations</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>  
+                <!-- Modal body -->
+                <form class="updateSubmit" method="post" enctype="multipart/form-data"  action="{% url 'dashboard:update-menu-rule' %}">
+                    {% csrf_token %}
+                    <input type='hidden'  name='id' id="menuruleid" />
+                    <div class="modal-body">
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Label' %}</p>
+                                <div class="form-group label-floating">
+                                    <input class="form-control" name="label" placeholder="Label..."  id="menurulelabel"/>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-12 col-md-12 col-xs-12">
+                                <p>{% trans  'Menu' %}</p>
+                                <select name="menu" class="form-group label-floating selectinputform" id="menurulemenu">
+                                    <option>Selectionner le menu</option>
+                                    {% for item in allmenu %}
+                                        <option value="{{ item.id }}">{{ item.title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Visualiser' %}</p>
+                                <div class="form-group label-floating">
+                                    <input type="checkbox" class="checkbox" name="can_read" id="menurulecanread" />
+                                    <hr>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Créer' %}</p>
+                                <div class="form-group label-floating">
+                                    <input type="checkbox" class="checkbox" name="can_create" id="menurulecancreate" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row blockformitem">
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Modifier' %}</p>
+                                <div class="form-group label-floating">
+                                    <input type="checkbox" class="checkbox" name="can_update" id="menurulecanupdate" />
+                                    <hr>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-12 col-xs-12">
+                                <p>{% trans  'Supprimer' %}</p>
+                                <div class="form-group label-floating">
+                                    <input type="checkbox" class="checkbox" name="can_delete" id="menurulecandelete" />
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="reset"  class="btn btn-bg-secondary" data-bs-dismiss="modal" aria-label="Close">{% trans 'Annuler' %}</button>
+                        <button type="submit" class="btn newBtn updatebtn">{%  trans 'Sauvegarder' %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock content  %}
