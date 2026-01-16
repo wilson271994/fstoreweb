@@ -26,7 +26,7 @@ from django.db import IntegrityError
 from dashboard.models import *
 from core.models import AccountActivationCode
 from django_filters.rest_framework import DjangoFilterBackend
-from cities_light.models import City, Country
+from cities_light.models import City, Country, Region
 from django.utils.translation import gettext_lazy as _
 from decimal import Decimal
 import uuid
@@ -135,7 +135,23 @@ def company_info():
         'slug'                      : company.slug, 
     }
     return data
-    
+
+#Format country 
+def one_country(country):
+    all_city           = []
+    for item in City.objects.filter(country=country):
+        all_city.append({
+            'id'        : item.pk,
+            'name'      : item.name,
+        })
+        
+    data = {
+        'id'            : country.pk,
+        'name'          : country.name,
+        'cities'        : all_city
+    }
+    return data
+
 #Person format
 def one_person(person):
     data = { 
@@ -439,28 +455,28 @@ def one_ticket(ticket):
 class SiteInfoApiView(CsrfExemptMixin, generic.View):
     def get(self, request, *args, **wargs):
         SITE_INFO = dict()
-        token = self.request.GET.get('token')
-        user_data = jwt.decode(token, 'Eg{x%^_~&Jxv%D**jZBPvMMXv/brp0', algorithms='HS256')
-        USER = User.objects.get(username=user_data["user"])
-        if USER:
-            allbanner = []
-            for item in BannerPubs.objects.filter(is_approved=True, is_active=True).order_by('-created_date'):
-                allbanner.append(one_banner(item))
-            SITE_INFO['banners'] = allbanner
+        allbanner = []
+        for item in BannerPubs.objects.filter(is_approved=True, is_active=True).order_by('-created_date'):
+            allbanner.append(one_banner(item))
+        SITE_INFO['banners'] = allbanner
 
-            categories = []
-            for item in parentCategory.objects.filter(is_active=True).order_by('-created_date'):
-                categories.append(one_category(item))
-            SITE_INFO['categories'] = categories
+        categories = []
+        for item in parentCategory.objects.filter(is_active=True).order_by('-created_date'):
+            categories.append(one_category(item))
+        SITE_INFO['categories'] = categories
 
-            allbrand = []
-            for item in Brands.objects.filter(is_active=True).order_by('-created_date'):
-                allbrand.append(one_brand(item))
-            SITE_INFO['brands'] = allbrand
+        allbrand = []
+        for item in Brands.objects.filter(is_active=True).order_by('-created_date'):
+            allbrand.append(one_brand(item))
+        SITE_INFO['brands'] = allbrand
+        
+        allcountry = []
+        for item in Country.objects.all():
+            allcountry.append(one_country(item))
+        SITE_INFO['countries'] = allcountry
 
-            SITE_INFO['company'] = company_info()
-            return JsonResponse({"status":200, "message":"Opération réussie!" ,'result':SITE_INFO})   
-        return JsonResponse({"status": 403, "message" : "Vous n'êtes pas autorisé à effectuer cette action"})
+        SITE_INFO['company'] = company_info()
+        return JsonResponse({"status":200, "message":"Opération réussie!" ,'result':SITE_INFO})   
 
 class LoginApiView(CsrfExemptMixin, generic.View):
     def post(self, request, *args, **kwargs):
@@ -542,7 +558,7 @@ class SinupApiView(CsrfExemptMixin, generic.View):
         
         PERSON.is_customer = True
 
-        if body['referral'] is not '':
+        if body['referral'] != '':
             PERSON.referral = User.objects.get(username=body['referral'])
         PERSON.save()
         
@@ -578,20 +594,21 @@ class SinupApiView(CsrfExemptMixin, generic.View):
             )
         except Exception as error:
             print(error) 
-        return JsonResponse({'status':200, 'message': str('Compte crée avec succès!')})
+        return JsonResponse({'status':200, 'message': str('Compte crée avec succès! Veuillez saisir le code reçu par mail pour l\'activer.')})
         
 class ActivateAccount(CsrfExemptMixin, generic.View):
     def post(self, request, *args, **kwargs):
-        data = json.loads(request.body.decode("utf8"))
+        body = json.loads(request.body.decode("utf8"))
+        print(body, 'ddd')
         activate_code = None
         PERSON  = None
         USER    = None
         RESULT  = dict()
-        current_user = User.objects.get(email=data['email'])
+        current_user = User.objects.get(email=body['email'])
         current_person = Persons.objects.get(user=current_user)
         
         try:
-            activate_code = AccountActivationCode.objects.get(person=current_person, code=data['code'])
+            activate_code = AccountActivationCode.objects.get(person=current_person, code=body['code'])
         except Exception as error:
             print(error)
             
@@ -1243,7 +1260,7 @@ class postCollection(CsrfExemptMixin, generic.View):
                 'customerPhonenumber'   : customer_phone_number,
                 'customerEmailaddress'  : customerEmailaddress,
                 'customerName'          : customer_name,
-                'customerAddress'       : customer.address if customer.address is not '' else customer.city.name,
+                'customerAddress'       : customer.address if customer.address != '' else customer.city.name,
                 'description'           : description,
                 'trid'                  : trid,
                 'initial_amount'        : amount
