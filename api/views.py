@@ -599,7 +599,6 @@ class SinupApiView(CsrfExemptMixin, generic.View):
 class ActivateAccount(CsrfExemptMixin, generic.View):
     def post(self, request, *args, **kwargs):
         body = json.loads(request.body.decode("utf8"))
-        print(body, 'ddd')
         activate_code = None
         PERSON  = None
         USER    = None
